@@ -1,8 +1,8 @@
 //
 //  AppDelegate.swift
-//  Tracker1
+//  Tracker
 //
-//  Created by user on 29.05.2025.
+//  Created by user on 27.05.2025.
 //
 
 import UIKit
@@ -10,10 +10,10 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
+    var window: UIWindow?
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
         return true
     }
 

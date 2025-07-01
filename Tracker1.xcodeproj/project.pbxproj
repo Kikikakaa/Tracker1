@@ -24,9 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		CE26456A2DE854B600514B83 /* Tracker1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker1.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CE2645802DE854B700514B83 /* Tracker1Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tracker1Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CE26458A2DE854B700514B83 /* Tracker1UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tracker1UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE4EB5272DF5DFB100FA9EAB /* Tracker1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE4EB5282DF5DFB100FA9EAB /* Tracker1Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tracker1Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE4EB5292DF5DFB100FA9EAB /* Tracker1UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tracker1UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -40,6 +40,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		CE01CA2E2E12B482005F4DE4 /* CollectionViewControllers */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CollectionViewControllers;
+			sourceTree = "<group>";
+		};
 		CE26456C2DE854B600514B83 /* Tracker1 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -48,14 +53,19 @@
 			path = Tracker1;
 			sourceTree = "<group>";
 		};
-		CE2645832DE854B700514B83 /* Tracker1Tests */ = {
+		CE2645C12DE8577500514B83 /* MainMenuControllers */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Tracker1Tests;
+			path = MainMenuControllers;
 			sourceTree = "<group>";
 		};
-		CE26458D2DE854B700514B83 /* Tracker1UITests */ = {
+		CE2645C32DE8579B00514B83 /* Help */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Tracker1UITests;
+			path = Help;
+			sourceTree = "<group>";
+		};
+		CEDB57E32E12B3F000CE7229 /* AddTrackerControllers */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AddTrackerControllers;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -89,20 +99,14 @@
 			isa = PBXGroup;
 			children = (
 				CE26456C2DE854B600514B83 /* Tracker1 */,
-				CE2645832DE854B700514B83 /* Tracker1Tests */,
-				CE26458D2DE854B700514B83 /* Tracker1UITests */,
-				CE26456B2DE854B600514B83 /* Products */,
+				CE2645C32DE8579B00514B83 /* Help */,
+				CE01CA2E2E12B482005F4DE4 /* CollectionViewControllers */,
+				CEDB57E32E12B3F000CE7229 /* AddTrackerControllers */,
+				CE2645C12DE8577500514B83 /* MainMenuControllers */,
+				CE4EB5272DF5DFB100FA9EAB /* Tracker1.app */,
+				CE4EB5282DF5DFB100FA9EAB /* Tracker1Tests.xctest */,
+				CE4EB5292DF5DFB100FA9EAB /* Tracker1UITests.xctest */,
 			);
-			sourceTree = "<group>";
-		};
-		CE26456B2DE854B600514B83 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				CE26456A2DE854B600514B83 /* Tracker1.app */,
-				CE2645802DE854B700514B83 /* Tracker1Tests.xctest */,
-				CE26458A2DE854B700514B83 /* Tracker1UITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -121,13 +125,17 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				CE01CA2E2E12B482005F4DE4 /* CollectionViewControllers */,
 				CE26456C2DE854B600514B83 /* Tracker1 */,
+				CE2645C12DE8577500514B83 /* MainMenuControllers */,
+				CE2645C32DE8579B00514B83 /* Help */,
+				CEDB57E32E12B3F000CE7229 /* AddTrackerControllers */,
 			);
 			name = Tracker1;
 			packageProductDependencies = (
 			);
 			productName = Tracker1;
-			productReference = CE26456A2DE854B600514B83 /* Tracker1.app */;
+			productReference = CE4EB5272DF5DFB100FA9EAB /* Tracker1.app */;
 			productType = "com.apple.product-type.application";
 		};
 		CE26457F2DE854B700514B83 /* Tracker1Tests */ = {
@@ -143,14 +151,11 @@
 			dependencies = (
 				CE2645822DE854B700514B83 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				CE2645832DE854B700514B83 /* Tracker1Tests */,
-			);
 			name = Tracker1Tests;
 			packageProductDependencies = (
 			);
 			productName = Tracker1Tests;
-			productReference = CE2645802DE854B700514B83 /* Tracker1Tests.xctest */;
+			productReference = CE4EB5282DF5DFB100FA9EAB /* Tracker1Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		CE2645892DE854B700514B83 /* Tracker1UITests */ = {
@@ -166,14 +171,11 @@
 			dependencies = (
 				CE26458C2DE854B700514B83 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				CE26458D2DE854B700514B83 /* Tracker1UITests */,
-			);
 			name = Tracker1UITests;
 			packageProductDependencies = (
 			);
 			productName = Tracker1UITests;
-			productReference = CE26458A2DE854B700514B83 /* Tracker1UITests.xctest */;
+			productReference = CE4EB5292DF5DFB100FA9EAB /* Tracker1UITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -209,7 +211,7 @@
 			mainGroup = CE2645612DE854B600514B83;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = CE26456B2DE854B600514B83 /* Products */;
+			productRefGroup = CE2645612DE854B600514B83;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -293,9 +295,8 @@
 				INFOPLIST_FILE = Tracker1/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -320,9 +321,8 @@
 				INFOPLIST_FILE = Tracker1/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
