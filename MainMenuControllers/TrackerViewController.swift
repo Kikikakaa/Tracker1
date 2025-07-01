@@ -103,7 +103,7 @@ class TrackerViewController: UIViewController {
         view.addGestureRecognizer(tapGesture)
         categories = [
             TrackerCategory(title: "Тестовая категория 1", trackers: [
-                Tracker(id: UUID(), title: "Трекер 1", color: .systemBlue, emoji: "👍", schedule: [.monday, .tuesday]),
+                Tracker(id: UUID(), title: "Трекер 1", color: .systemBlue, emoji: "😈", schedule: [.monday, .tuesday]),
                 Tracker(id: UUID(), title: "Трекер 2", color: .systemGreen, emoji: "📚", schedule: [.wednesday])
             ]),
             TrackerCategory(title: "Тестовая категория 2", trackers: [
