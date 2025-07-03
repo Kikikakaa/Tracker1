@@ -1,6 +1,6 @@
 import UIKit
 
-class TrackerViewController: UIViewController {
+final class TrackerViewController: UIViewController {
     
     private var categories: [TrackerCategory] = []
     private var completedTrackers: [TrackerRecord] = []
@@ -146,7 +146,6 @@ class TrackerViewController: UIViewController {
     }
     
     private func filteredCategories() -> [TrackerCategory] {
-        // Определяем текущий день недели
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: currentDate)
         guard let currentWeekday = Weekday(rawValue: weekday) else {
@@ -160,23 +159,19 @@ class TrackerViewController: UIViewController {
     День недели: \(currentWeekday.shortName)
     Всего категорий: \(categories.count)
     """)
-        
-        // Фильтруем категории
+
         let filtered = categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
-                // Трекеры без расписания всегда показываются
                 if tracker.schedule == nil {
                     print("Трекер '\(tracker.title)': ✅ подходит (без расписания)")
                     return true
                 }
-                
-                // Проверяем, входит ли текущий день в расписание
+
                 let isIncluded = tracker.schedule?.contains(currentWeekday) ?? false
                 print("Трекер '\(tracker.title)': \(isIncluded ? "✅ подходит" : "❌ не подходит")")
                 return isIncluded
             }
             
-            // Если после фильтрации остались трекеры, возвращаем категорию
             if !filteredTrackers.isEmpty {
                 return TrackerCategory(title: category.title, trackers: filteredTrackers)
             } else {
@@ -186,7 +181,6 @@ class TrackerViewController: UIViewController {
         
         print("Результат фильтрации:")
         filtered.forEach { print("- \($0.title): \($0.trackers.count) трекеров") }
-        
         return filtered
     }
     
@@ -312,11 +306,14 @@ extension TrackerViewController: UICollectionViewDataSource {
             return UICollectionReusableView()
         }
         
-        let header = collectionView.dequeueReusableSupplementaryView(
+        guard let header = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
             withReuseIdentifier: TrackerSectionHeaderView.identifier,
             for: indexPath
-        ) as! TrackerSectionHeaderView
+        ) as? TrackerSectionHeaderView else {
+            assertionFailure("Не удалось создать header типа TrackerSectionHeaderView")
+            return UICollectionReusableView()
+        }
         
         let category = filteredCategories()[indexPath.section]
         header.titleLabel.text = category.title
