@@ -367,6 +367,8 @@ extension HabitCreationViewController: ScheduleDelegate {
 }
 
 extension HabitCreationViewController: UITextFieldDelegate {
+    private static let maxCharacterLimit = 38
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard let currentText = textField.text,
               let rangeInText = Range(range, in: currentText) else {
@@ -375,7 +377,7 @@ extension HabitCreationViewController: UITextFieldDelegate {
         
         let updatedText = currentText.replacingCharacters(in: rangeInText, with: string)
         
-        if updatedText.count > 38 {
+        if updatedText.count > HabitCreationViewController.maxCharacterLimit {
             showError("Ограничение 38 символов")
             return false
         }

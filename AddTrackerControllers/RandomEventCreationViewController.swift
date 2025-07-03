@@ -254,6 +254,8 @@ final class RandomEventCreationViewController: UIViewController {
 }
 
 extension RandomEventCreationViewController: UITextFieldDelegate {
+    private static let maxCharacterLimit = 38
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard let currentText = textField.text,
               let rangeInText = Range(range, in: currentText) else {
@@ -262,7 +264,7 @@ extension RandomEventCreationViewController: UITextFieldDelegate {
         
         let updatedText = currentText.replacingCharacters(in: rangeInText, with: string)
         
-        if updatedText.count > 38 {
+        if updatedText.count > RandomEventCreationViewController.maxCharacterLimit {
             showError("Ограничение 38 символов")
             return false
         }
