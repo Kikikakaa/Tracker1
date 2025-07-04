@@ -40,7 +40,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		CE01CA2E2E12B482005F4DE4 /* CollectionViewControllers */ = {
+		CE080D912E17BC4800A47A79 /* AddTrackerCollectionViewControllers */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AddTrackerCollectionViewControllers;
+			sourceTree = "<group>";
+		};
+		CE080DAB2E17C5E300A47A79 /* CollectionViewControllers */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = CollectionViewControllers;
 			sourceTree = "<group>";
@@ -100,8 +105,9 @@
 			children = (
 				CE26456C2DE854B600514B83 /* Tracker1 */,
 				CE2645C32DE8579B00514B83 /* Help */,
-				CE01CA2E2E12B482005F4DE4 /* CollectionViewControllers */,
+				CE080D912E17BC4800A47A79 /* AddTrackerCollectionViewControllers */,
 				CEDB57E32E12B3F000CE7229 /* AddTrackerControllers */,
+				CE080DAB2E17C5E300A47A79 /* CollectionViewControllers */,
 				CE2645C12DE8577500514B83 /* MainMenuControllers */,
 				CE4EB5272DF5DFB100FA9EAB /* Tracker1.app */,
 				CE4EB5282DF5DFB100FA9EAB /* Tracker1Tests.xctest */,
@@ -125,7 +131,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				CE01CA2E2E12B482005F4DE4 /* CollectionViewControllers */,
+				CE080D912E17BC4800A47A79 /* AddTrackerCollectionViewControllers */,
+				CE080DAB2E17C5E300A47A79 /* CollectionViewControllers */,
 				CE26456C2DE854B600514B83 /* Tracker1 */,
 				CE2645C12DE8577500514B83 /* MainMenuControllers */,
 				CE2645C32DE8579B00514B83 /* Help */,
@@ -291,6 +298,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2UCS8747P3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Tracker1/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -317,6 +325,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2UCS8747P3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Tracker1/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
