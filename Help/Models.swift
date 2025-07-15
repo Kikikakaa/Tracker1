@@ -1,6 +1,6 @@
 import UIKit
 
-enum Weekday: Int, CaseIterable {
+enum Weekday: Int, CaseIterable, Codable {
     
     case monday = 2
     case tuesday = 3
@@ -44,11 +44,13 @@ struct Tracker {
 }
 
 struct TrackerCategory {
+    let id: UUID
     let title: String
     let trackers: [Tracker]
 }
 
 struct TrackerRecord {
+    let id: UUID
     let trackerId: UUID
     let date: Date
 }

@@ -1,6 +1,8 @@
 import UIKit
 
 final class HabitCreationViewController: UIViewController {
+    private let trackerStore = TrackerStore(context: CoreDataManager.shared.context)
+    private let categoryStore = TrackerCategoryStore(context: CoreDataManager.shared.context)
     private var schedule: [Weekday] = []
     private var trackerTitle: String = ""
     private let emojies = [
@@ -360,8 +362,10 @@ final class HabitCreationViewController: UIViewController {
     
     @objc private func createTapped() {
         guard let selectedEmojiIndex = selectedEmojiIndex,
-              let selectedColorIndex = selectedColorIndex else {
-            assertionFailure("Эмодзи и цвет не выбран")
+              let selectedColorIndex = selectedColorIndex,
+              !trackerTitle.trimmingCharacters(in: .whitespaces).isEmpty,
+              !schedule.isEmpty else {
+            showError("Заполните все обязательные поля")
             return
         }
         
@@ -373,10 +377,14 @@ final class HabitCreationViewController: UIViewController {
             schedule: schedule
         )
         
-        // Используем замыкание для передачи трекера
-        onTrackerCreated?(newTracker)
-        navigationController?.popToRootViewController(animated: true)
-        dismiss(animated: true)
+        do {
+            try trackerStore.addTracker(newTracker)
+            onTrackerCreated?(newTracker)
+            dismiss(animated: true)
+        } catch {
+            showError("Ошибка сохранения: \(error.localizedDescription)")
+            print("❌ Core Data Error: \(error)")
+        }
     }
     
     private func updateCreateButtonState() {

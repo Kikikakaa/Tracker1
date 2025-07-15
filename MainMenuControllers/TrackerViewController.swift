@@ -5,6 +5,10 @@ final class TrackerViewController: UIViewController {
     private var categories: [TrackerCategory] = []
     private var completedTrackers: [TrackerRecord] = []
     private var currentDate = Date()
+    private let trackerStore = TrackerStore(context: CoreDataManager.shared.context)
+    private let categoryStore = TrackerCategoryStore(context: CoreDataManager.shared.context)
+    private let recordStore = TrackerRecordStore(context: CoreDataManager.shared.context)
+        
     private let cellIdentifier = TrackerCollectionViewCell.identifier
     private let collectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -101,20 +105,36 @@ final class TrackerViewController: UIViewController {
         trackerAddButton.addTarget(self, action: #selector(addTrackerTapped), for: .touchUpInside)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
-        categories = [
-            TrackerCategory(title: "Тестовая категория 1", trackers: [
-                Tracker(id: UUID(), title: "Трекер 1", color: .systemBlue, emoji: "😈", schedule: [.monday, .tuesday]),
-                Tracker(id: UUID(), title: "Трекер 2", color: .systemGreen, emoji: "📚", schedule: [.wednesday])
-            ]),
-            TrackerCategory(title: "Тестовая категория 2", trackers: [
-                Tracker(id: UUID(), title: "Трекер 3", color: .systemRed, emoji: "🔥", schedule: nil),
-                Tracker(id: UUID(), title: "Трекер 4", color: .systemPurple, emoji: "🎉", schedule: nil)
-            ])
-        ]
-
-        
+//        categories = [
+//            TrackerCategory(title: "Тестовая категория 1", trackers: [
+//                Tracker(id: UUID(), title: "Трекер 1", color: .systemBlue, emoji: "😈", schedule: [.monday, .tuesday]),
+//                Tracker(id: UUID(), title: "Трекер 2", color: .systemGreen, emoji: "📚", schedule: [.wednesday])
+//            ]),
+//            TrackerCategory(title: "Тестовая категория 2", trackers: [
+//                Tracker(id: UUID(), title: "Трекер 3", color: .systemRed, emoji: "🔥", schedule: nil),
+//                Tracker(id: UUID(), title: "Трекер 4", color: .systemPurple, emoji: "🎉", schedule: nil)
+//            ])
+//        ]
+        loadData()
         collectionView.reloadData()
         updateStubVisibility()
+    }
+    
+    private func loadData() {
+        do {
+            // Загрузка категорий и трекеров из Core Data
+            let coreDataCategories = try categoryStore.fetchAllCategories()
+            categories = coreDataCategories
+            
+            // Загрузка выполненных трекеров из Core Data
+            completedTrackers = try recordStore.fetchAllRecords()
+            
+            print("✅ Данные успешно загружены:")
+            print("- Категорий: \(categories.count)")
+            print("- Записей о выполнении: \(completedTrackers.count)")
+        } catch {
+            print("❌ Ошибка загрузки данных: \(error)")
+        }
     }
     
     private func setupCollectionView() {
@@ -173,7 +193,7 @@ final class TrackerViewController: UIViewController {
             }
             
             if !filteredTrackers.isEmpty {
-                return TrackerCategory(title: category.title, trackers: filteredTrackers)
+                return TrackerCategory(id: category.id, title: category.title, trackers: filteredTrackers)
             } else {
                 return nil
             }
@@ -192,21 +212,104 @@ final class TrackerViewController: UIViewController {
     }
     
     private func completeTracker(_ tracker: Tracker) {
-        let record = TrackerRecord(trackerId: tracker.id, date: currentDate)
-        completedTrackers.append(record)
-        collectionView.reloadData()
+        // Проверяем, не выполнен ли уже трекер на эту дату
+        if isTrackerCompletedToday(tracker) {
+            print("⚠️ Трекер '\(tracker.title)' уже выполнен на сегодня")
+            return
+        }
+        
+        do {
+            // Сохраняем в Core Data
+            try recordStore.addRecord(trackerId: tracker.id, date: currentDate)
+            
+            // Обновляем локальный массив
+            let record = TrackerRecord(id: UUID(), trackerId: tracker.id, date: currentDate)
+            completedTrackers.append(record)
+            
+            print("✅ Трекер '\(tracker.title)' отмечен как выполненный")
+        } catch {
+            print("❌ Ошибка при сохранении записи: \(error)")
+        }
+        
+        // Перезагружаем UI в любом случае
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
+    }
+    
+    private func reloadCompletedTrackers() {
+        do {
+            completedTrackers = try recordStore.fetchAllRecords()
+            print("✅ Перезагружены записи о выполнении: \(completedTrackers.count)")
+        } catch {
+            print("❌ Ошибка при перезагрузке записей: \(error)")
+        }
+    }
+    
+    private func completeTrackerUpdated(_ tracker: Tracker) {
+        if isTrackerCompletedToday(tracker) {
+            print("⚠️ Трекер '\(tracker.title)' уже выполнен на сегодня")
+            return
+        }
+        
+        do {
+            try recordStore.addRecord(trackerId: tracker.id, date: currentDate)
+            reloadCompletedTrackers() // Перезагружаем данные из Core Data
+            print("✅ Трекер '\(tracker.title)' отмечен как выполненный")
+        } catch {
+            print("❌ Ошибка при сохранении записи: \(error)")
+        }
+        
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
+    }
+
+    private func uncompleteTrackerUpdated(_ tracker: Tracker) {
+        do {
+            try recordStore.deleteRecord(trackerId: tracker.id, date: currentDate)
+            reloadCompletedTrackers() // Перезагружаем данные из Core Data
+            print("✅ Трекер '\(tracker.title)' отмечен как невыполненный")
+        } catch {
+            print("❌ Ошибка при удалении записи: \(error)")
+        }
+        
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
     }
     
     private func uncompleteTracker(_ tracker: Tracker) {
-        completedTrackers.removeAll { record in
-            let calendar = Calendar.current
-            return calendar.isDate(record.date, inSameDayAs: currentDate) && record.trackerId == tracker.id
+        do {
+            // Удаляем из Core Data
+            try recordStore.deleteRecord(trackerId: tracker.id, date: currentDate)
+            
+            // Обновляем локальный массив
+            completedTrackers.removeAll { record in
+                let calendar = Calendar.current
+                return calendar.isDate(record.date, inSameDayAs: currentDate) && record.trackerId == tracker.id
+            }
+            
+            print("✅ Трекер '\(tracker.title)' отмечен как невыполненный")
+        } catch {
+            print("❌ Ошибка при удалении записи: \(error)")
         }
-        collectionView.reloadData()
+        
+        // Перезагружаем UI в любом случае
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
     }
     
     private func daysCompleted(for tracker: Tracker) -> Int {
-        completedTrackers.filter { $0.trackerId == tracker.id }.count
+        do {
+             // Получаем актуальное количество из Core Data
+             return try recordStore.countRecords(for: tracker.id)
+         } catch {
+             print("❌ Ошибка при подсчете выполненных дней: \(error)")
+             // Fallback на локальный массив
+             return completedTrackers.filter { $0.trackerId == tracker.id }.count
+         }
     }
     
     private func setupUI() {
@@ -350,10 +453,10 @@ extension TrackerViewController {
             print("Найдена категория 'Мои трекеры' (индекс \(index))")
             var updatedTrackers = categories[index].trackers
             updatedTrackers.append(tracker)
-            categories[index] = TrackerCategory(title: categoryTitle, trackers: updatedTrackers)
+            categories[index] = TrackerCategory(id: categories[index].id, title: categoryTitle, trackers: updatedTrackers)
         } else {
             print("Создаем новую категорию 'Мои трекеры'")
-            categories.append(TrackerCategory(title: categoryTitle, trackers: [tracker]))
+            categories.append(TrackerCategory(id: UUID(), title: categoryTitle, trackers: [tracker]))
         }
         
         print("Текущие категории после обновления:")

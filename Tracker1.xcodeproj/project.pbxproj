@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CEBE52B32E1C3F3900A53775 /* TrackerCatalog.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CEBE52B12E1C3F3900A53775 /* TrackerCatalog.xcdatamodeld */; };
+		CEBE52F52E1D1A7900A53775 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBE52F42E1D1A6A00A53775 /* CoreDataManager.swift */; };
+		CEBE52F72E1E5E6000A53775 /* TrackerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBE52F62E1E5E5400A53775 /* TrackerStore.swift */; };
+		CEBE52F92E1E5E7200A53775 /* TrackerCategoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBE52F82E1E5E6300A53775 /* TrackerCategoryStore.swift */; };
+		CEBE52FB2E1E5E8100A53775 /* TrackerRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBE52FA2E1E5E7600A53775 /* TrackerRecordStore.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		CE2645812DE854B700514B83 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +35,11 @@
 		CE4EB5272DF5DFB100FA9EAB /* Tracker1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE4EB5282DF5DFB100FA9EAB /* Tracker1Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tracker1Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE4EB5292DF5DFB100FA9EAB /* Tracker1UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tracker1UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CEBE52B22E1C3F3900A53775 /* TrackerCatalog.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerCatalog.xcdatamodel; sourceTree = "<group>"; };
+		CEBE52F42E1D1A6A00A53775 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
+		CEBE52F62E1E5E5400A53775 /* TrackerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerStore.swift; sourceTree = "<group>"; };
+		CEBE52F82E1E5E6300A53775 /* TrackerCategoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryStore.swift; sourceTree = "<group>"; };
+		CEBE52FA2E1E5E7600A53775 /* TrackerRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerRecordStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -103,6 +116,7 @@
 		CE2645612DE854B600514B83 = {
 			isa = PBXGroup;
 			children = (
+				CEBE52B02E1C3ED400A53775 /* CoreData */,
 				CE26456C2DE854B600514B83 /* Tracker1 */,
 				CE2645C32DE8579B00514B83 /* Help */,
 				CE080D912E17BC4800A47A79 /* AddTrackerCollectionViewControllers */,
@@ -113,6 +127,18 @@
 				CE4EB5282DF5DFB100FA9EAB /* Tracker1Tests.xctest */,
 				CE4EB5292DF5DFB100FA9EAB /* Tracker1UITests.xctest */,
 			);
+			sourceTree = "<group>";
+		};
+		CEBE52B02E1C3ED400A53775 /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				CEBE52FA2E1E5E7600A53775 /* TrackerRecordStore.swift */,
+				CEBE52F82E1E5E6300A53775 /* TrackerCategoryStore.swift */,
+				CEBE52F62E1E5E5400A53775 /* TrackerStore.swift */,
+				CEBE52F42E1D1A6A00A53775 /* CoreDataManager.swift */,
+				CEBE52B12E1C3F3900A53775 /* TrackerCatalog.xcdatamodeld */,
+			);
+			path = CoreData;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -258,6 +284,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEBE52F72E1E5E6000A53775 /* TrackerStore.swift in Sources */,
+				CEBE52F52E1D1A7900A53775 /* CoreDataManager.swift in Sources */,
+				CEBE52FB2E1E5E8100A53775 /* TrackerRecordStore.swift in Sources */,
+				CEBE52F92E1E5E7200A53775 /* TrackerCategoryStore.swift in Sources */,
+				CEBE52B32E1C3F3900A53775 /* TrackerCatalog.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -572,6 +603,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		CEBE52B12E1C3F3900A53775 /* TrackerCatalog.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				CEBE52B22E1C3F3900A53775 /* TrackerCatalog.xcdatamodel */,
+			);
+			currentVersion = CEBE52B22E1C3F3900A53775 /* TrackerCatalog.xcdatamodel */;
+			path = TrackerCatalog.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = CE2645622DE854B600514B83 /* Project object */;
 }
