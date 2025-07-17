@@ -4,7 +4,6 @@ protocol TrackerStoreDelegate: AnyObject {
     func didUpdateTrackers()
 }
 
-
 final class TrackerStore: NSObject {
     private let context: NSManagedObjectContext
     private let colorMarshalling = UIColorMarshalling()
@@ -98,66 +97,66 @@ final class TrackerStore: NSObject {
             )
         }
     }
+    
+    func updateTracker(_ tracker: Tracker) throws {
+        let request = TrackerCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
         
-        func updateTracker(_ tracker: Tracker) throws {
-            let request = TrackerCoreData.fetchRequest()
-            request.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+        if let trackerCoreData = try context.fetch(request).first {
+            trackerCoreData.title = tracker.title
+            trackerCoreData.emoji = tracker.emoji
+            trackerCoreData.colorHex = colorMarshalling.hexString(from: tracker.color)
             
-            if let trackerCoreData = try context.fetch(request).first {
-                trackerCoreData.title = tracker.title
-                trackerCoreData.emoji = tracker.emoji
-                trackerCoreData.colorHex = colorMarshalling.hexString(from: tracker.color)
-                
-                if let schedule = tracker.schedule {
-                    let scheduleData = try? JSONEncoder().encode(schedule)
-                    trackerCoreData.schedule = scheduleData ?? Data()
-                } else {
-                    trackerCoreData.schedule = Data()
-                }
-                
-                try context.save()
-            }
-        }
-        
-        func deleteTracker(_ id: UUID) throws {
-            let request = TrackerCoreData.fetchRequest()
-            request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-            
-            if let tracker = try context.fetch(request).first {
-                context.delete(tracker)
-                try context.save()
-            }
-        }
-    }
-
-    extension TrackerStore: NSFetchedResultsControllerDelegate {
-        func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-            delegate?.didUpdateTrackers()
-        }
-    }
-
-    extension TrackerCoreData {
-        func toTracker() -> Tracker? {
-            guard let id = id,
-                  let title = title,
-                  let emoji = emoji,
-                  let colorHex = colorHex else {
-                return nil
-            }
-            
-            let schedule: [Weekday]?
-            if let scheduleData = self.schedule as? Data {
-                schedule = try? JSONDecoder().decode([Weekday].self, from: scheduleData)
+            if let schedule = tracker.schedule {
+                let scheduleData = try? JSONEncoder().encode(schedule)
+                trackerCoreData.schedule = scheduleData ?? Data()
             } else {
-                schedule = nil
+                trackerCoreData.schedule = Data()
             }
             
-            return Tracker(
-                id: id,
-                title: title,
-                color: UIColorMarshalling().color(from: colorHex),
-                emoji: emoji,
-                schedule: schedule
-            )
+            try context.save()
         }
     }
+    
+    func deleteTracker(_ id: UUID) throws {
+        let request = TrackerCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        if let tracker = try context.fetch(request).first {
+            context.delete(tracker)
+            try context.save()
+        }
+    }
+}
+
+extension TrackerStore: NSFetchedResultsControllerDelegate {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        delegate?.didUpdateTrackers()
+    }
+}
+
+extension TrackerCoreData {
+    func toTracker() -> Tracker? {
+        guard let id = id,
+              let title = title,
+              let emoji = emoji,
+              let colorHex = colorHex else {
+            return nil
+        }
+        
+        let schedule: [Weekday]?
+        if let scheduleData = self.schedule as? Data {
+            schedule = try? JSONDecoder().decode([Weekday].self, from: scheduleData)
+        } else {
+            schedule = nil
+        }
+        
+        return Tracker(
+            id: id,
+            title: title,
+            color: UIColorMarshalling().color(from: colorHex),
+            emoji: emoji,
+            schedule: schedule
+        )
+    }
+}

@@ -14,21 +14,19 @@ final class CoreDataManager {
         return container
     }()
     
-    
-    
     var context: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
     
     func saveContext() {
-        if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                let nserror = error as NSError
-                assertionFailure("Unresolved error \(nserror), \(nserror.userInfo)")
-                context.rollback()
-            }
+        guard context.hasChanges else { return }
+        
+        do {
+            try context.save()
+        } catch {
+            let nserror = error as NSError
+            assertionFailure("Unresolved error \(nserror), \(nserror.userInfo)")
+            context.rollback()
         }
     }
 }

@@ -41,10 +41,10 @@ final class TrackerViewController: UIViewController {
     }()
     
     private let scrollView: UIScrollView = {
-        let sv = UIScrollView()
-        sv.showsVerticalScrollIndicator = false
-        sv.translatesAutoresizingMaskIntoConstraints = false
-        return sv
+        let scrollView = UIScrollView()
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
     }()
     
     private let contentView: UIView = {
@@ -105,16 +105,6 @@ final class TrackerViewController: UIViewController {
         trackerAddButton.addTarget(self, action: #selector(addTrackerTapped), for: .touchUpInside)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
-//        categories = [
-//            TrackerCategory(title: "Тестовая категория 1", trackers: [
-//                Tracker(id: UUID(), title: "Трекер 1", color: .systemBlue, emoji: "😈", schedule: [.monday, .tuesday]),
-//                Tracker(id: UUID(), title: "Трекер 2", color: .systemGreen, emoji: "📚", schedule: [.wednesday])
-//            ]),
-//            TrackerCategory(title: "Тестовая категория 2", trackers: [
-//                Tracker(id: UUID(), title: "Трекер 3", color: .systemRed, emoji: "🔥", schedule: nil),
-//                Tracker(id: UUID(), title: "Трекер 4", color: .systemPurple, emoji: "🎉", schedule: nil)
-//            ])
-//        ]
         loadData()
         collectionView.reloadData()
         updateStubVisibility()

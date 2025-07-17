@@ -67,9 +67,9 @@ final class TrackerRecordStore {
         
         let request = TrackerRecordCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "trackerId == %@ AND date >= %@ AND date < %@",
-                                       trackerId as CVarArg,
-                                       startOfDay as CVarArg,
-                                       endOfDay as CVarArg)
+                                        trackerId as CVarArg,
+                                        startOfDay as CVarArg,
+                                        endOfDay as CVarArg)
         
         let records = try context.fetch(request)
         for record in records {

@@ -35,10 +35,10 @@ final class HabitCreationViewController: UIViewController {
     }()
     
     private let scrollView: UIScrollView = {
-        let sv = UIScrollView()
-        sv.showsVerticalScrollIndicator = false
-        sv.translatesAutoresizingMaskIntoConstraints = false
-        return sv
+        let scrollView = UIScrollView()
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
     }()
     
     private let contentView: UIView = {
