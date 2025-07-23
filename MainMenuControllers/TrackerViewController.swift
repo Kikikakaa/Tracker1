@@ -431,28 +431,6 @@ extension TrackerViewController {
             print("❌ Ошибка при сохранении трекера: \(error)")
         }
     }
-    
-//    func addNewTracker(_ tracker: Tracker) {
-//        let categoryTitle = "Мои трекеры"
-//        
-//        if let index = categories.firstIndex(where: { $0.title == categoryTitle }) {
-//            print("Найдена категория 'Мои трекеры' (индекс \(index))")
-//            var updatedTrackers = categories[index].trackers
-//            updatedTrackers.append(tracker)
-//            categories[index] = TrackerCategory(id: categories[index].id, title: categoryTitle, trackers: updatedTrackers)
-//        } else {
-//            print("Создаем новую категорию 'Мои трекеры'")
-//            categories.append(TrackerCategory(id: UUID(), title: categoryTitle, trackers: [tracker]))
-//        }
-//        
-//        print("Текущие категории после обновления:")
-//            categories.forEach { print("- \($0.title): \($0.trackers.count) трекеров") }
-//        
-//        DispatchQueue.main.async {
-//            self.collectionView.reloadData()
-//            self.updateStubVisibility()
-//        }
-//    }
 }
 
 extension TrackerViewController: AddTrackerDelegate {
