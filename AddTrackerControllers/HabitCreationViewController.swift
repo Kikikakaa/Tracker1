@@ -22,7 +22,8 @@ final class HabitCreationViewController: UIViewController {
     ]
     private var selectedEmojiIndex: Int?
     private var selectedColorIndex: Int?
-    var onTrackerCreated: ((Tracker) -> Void)?
+    private var selectedCategory: TrackerCategoryCoreData?
+    var onTrackerCreated: ((Tracker, TrackerCategoryCoreData) -> Void)?
     private let cellIdentifier = AddTrackerCollectionViewCell().cellIdentifier
     private let collectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -115,7 +116,6 @@ final class HabitCreationViewController: UIViewController {
         
         // Лейбл для деталей категории
         categoryDetailsLabel = UILabel()
-        categoryDetailsLabel.text = "Важное"
         categoryDetailsLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         categoryDetailsLabel.textColor = UIColor(resource: .ypGray)
         categoryDetailsLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -347,7 +347,13 @@ final class HabitCreationViewController: UIViewController {
     }
     
     @objc private func categoryTapped() {
-        // Заглушка для будущей реализации
+        
+        let viewModel = CategoryViewModel()
+        let categoryVC = CategoryViewController(viewModel: viewModel)
+        categoryVC.delegate = self
+        let navController = UINavigationController(rootViewController: categoryVC)
+        
+        present(navController, animated: true)
     }
     
     @objc private func scheduleTapped() {
@@ -364,7 +370,8 @@ final class HabitCreationViewController: UIViewController {
         guard let selectedEmojiIndex = selectedEmojiIndex,
               let selectedColorIndex = selectedColorIndex,
               !trackerTitle.trimmingCharacters(in: .whitespaces).isEmpty,
-              !schedule.isEmpty else {
+              !schedule.isEmpty,
+              let selectedCategory = selectedCategory else {
             showError("Заполните все обязательные поля")
             return
         }
@@ -378,8 +385,8 @@ final class HabitCreationViewController: UIViewController {
         )
         
         do {
-            try trackerStore.addTracker(newTracker)
-            onTrackerCreated?(newTracker)
+            try trackerStore.addTracker(newTracker, category: selectedCategory)
+            onTrackerCreated?(newTracker, selectedCategory)
             dismiss(animated: true)
         } catch {
             showError("Ошибка сохранения: \(error.localizedDescription)")
@@ -390,7 +397,7 @@ final class HabitCreationViewController: UIViewController {
     private func updateCreateButtonState() {
         let isTitleValid = !trackerTitle.trimmingCharacters(in: .whitespaces).isEmpty
         let isScheduleValid = !schedule.isEmpty
-        createButton.isEnabled = isTitleValid && isScheduleValid && selectedColorIndex != nil && selectedEmojiIndex != nil
+        createButton.isEnabled = isTitleValid && isScheduleValid && selectedColorIndex != nil && selectedEmojiIndex != nil && selectedCategory != nil
         createButton.backgroundColor = createButton.isEnabled ? UIColor(resource: .ypBlack) : UIColor(resource: .ypGray)
     }
 }
@@ -573,5 +580,22 @@ extension HabitCreationViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: 20)
+    }
+}
+
+extension HabitCreationViewController: CategorySelectionDelegate {
+    func didSelectCategory(_ category: TrackerCategoryCoreData) {
+        selectedCategory = category
+        updateCategoryButtonSubtitle()
+        updateCreateButtonState()
+    }
+    
+    private func updateCategoryButtonSubtitle() {
+        // Убираем любой attributedText, который мог быть установлен ранее
+        categoryButton.setAttributedTitle(nil, for: .normal)
+        categoryButton.setTitle(nil, for: .normal)
+        
+        // Обновляем только categoryDetailsLabel
+        categoryDetailsLabel.text = selectedCategory?.title ?? ""
     }
 }

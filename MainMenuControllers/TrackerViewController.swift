@@ -146,11 +146,6 @@ final class TrackerViewController: UIViewController {
     
     private func updateStubVisibility() {
         let hasTrackers = !filteredCategories().isEmpty
-        print("""
-        \n=== Проверка заглушки ===
-        Есть трекеры: \(hasTrackers ? "ДА" : "НЕТ")
-        Заглушка: \(hasTrackers ? "скрыта" : "показана")
-        """)
         stubImageView.isHidden = hasTrackers
         stubLabel.isHidden = hasTrackers
     }
@@ -159,26 +154,16 @@ final class TrackerViewController: UIViewController {
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: currentDate)
         guard let currentWeekday = Weekday(rawValue: weekday) else {
-            print("⚠️ Ошибка: Не удалось определить текущий день недели")
             return categories // Возвращаем все категории в случае ошибки
         }
-        
-        print("""
-    === Фильтрация трекеров ===
-    Текущая дата: \(currentDate)
-    День недели: \(currentWeekday.shortName)
-    Всего категорий: \(categories.count)
-    """)
 
         let filtered = categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
                 if tracker.schedule == nil {
-                    print("Трекер '\(tracker.title)': ✅ подходит (без расписания)")
                     return true
                 }
 
                 let isIncluded = tracker.schedule?.contains(currentWeekday) ?? false
-                print("Трекер '\(tracker.title)': \(isIncluded ? "✅ подходит" : "❌ не подходит")")
                 return isIncluded
             }
             
@@ -188,9 +173,6 @@ final class TrackerViewController: UIViewController {
                 return nil
             }
         }
-        
-        print("Результат фильтрации:")
-        filtered.forEach { print("- \($0.title): \($0.trackers.count) трекеров") }
         return filtered
     }
     
@@ -202,21 +184,14 @@ final class TrackerViewController: UIViewController {
     }
     
     private func completeTracker(_ tracker: Tracker) {
-        // Проверяем, не выполнен ли уже трекер на эту дату
         if isTrackerCompletedToday(tracker) {
-            print("⚠️ Трекер '\(tracker.title)' уже выполнен на сегодня")
             return
         }
         
         do {
-            // Сохраняем в Core Data
             try recordStore.addRecord(trackerId: tracker.id, date: currentDate)
-            
-            // Обновляем локальный массив
             let record = TrackerRecord(id: UUID(), trackerId: tracker.id, date: currentDate)
             completedTrackers.append(record)
-            
-            print("✅ Трекер '\(tracker.title)' отмечен как выполненный")
         } catch {
             print("❌ Ошибка при сохранении записи: \(error)")
         }
@@ -230,7 +205,6 @@ final class TrackerViewController: UIViewController {
     private func reloadCompletedTrackers() {
         do {
             completedTrackers = try recordStore.fetchAllRecords()
-            print("✅ Перезагружены записи о выполнении: \(completedTrackers.count)")
         } catch {
             print("❌ Ошибка при перезагрузке записей: \(error)")
         }
@@ -238,14 +212,12 @@ final class TrackerViewController: UIViewController {
     
     private func completeTrackerUpdated(_ tracker: Tracker) {
         if isTrackerCompletedToday(tracker) {
-            print("⚠️ Трекер '\(tracker.title)' уже выполнен на сегодня")
             return
         }
         
         do {
             try recordStore.addRecord(trackerId: tracker.id, date: currentDate)
             reloadCompletedTrackers() // Перезагружаем данные из Core Data
-            print("✅ Трекер '\(tracker.title)' отмечен как выполненный")
         } catch {
             print("❌ Ошибка при сохранении записи: \(error)")
         }
@@ -259,7 +231,6 @@ final class TrackerViewController: UIViewController {
         do {
             try recordStore.deleteRecord(trackerId: tracker.id, date: currentDate)
             reloadCompletedTrackers() // Перезагружаем данные из Core Data
-            print("✅ Трекер '\(tracker.title)' отмечен как невыполненный")
         } catch {
             print("❌ Ошибка при удалении записи: \(error)")
         }
@@ -279,8 +250,6 @@ final class TrackerViewController: UIViewController {
                 let calendar = Calendar.current
                 return calendar.isDate(record.date, inSameDayAs: currentDate) && record.trackerId == tracker.id
             }
-            
-            print("✅ Трекер '\(tracker.title)' отмечен как невыполненный")
         } catch {
             print("❌ Ошибка при удалении записи: \(error)")
         }
@@ -429,38 +398,65 @@ extension TrackerViewController {
         present(navController, animated: true)
     }
     
-    func addNewTracker(_ tracker: Tracker) {
-        print("""
-        \n=== Получен трекер в TrackerViewController ===
-        ID: \(tracker.id)
-        Название: \(tracker.title)
-        Дни: \(tracker.schedule?.map { $0.shortName } ?? [])
-        """)
-        
-        let categoryTitle = "Мои трекеры"
-        
-        if let index = categories.firstIndex(where: { $0.title == categoryTitle }) {
-            print("Найдена категория 'Мои трекеры' (индекс \(index))")
-            var updatedTrackers = categories[index].trackers
-            updatedTrackers.append(tracker)
-            categories[index] = TrackerCategory(id: categories[index].id, title: categoryTitle, trackers: updatedTrackers)
-        } else {
-            print("Создаем новую категорию 'Мои трекеры'")
-            categories.append(TrackerCategory(id: UUID(), title: categoryTitle, trackers: [tracker]))
-        }
-        
-        print("Текущие категории после обновления:")
-            categories.forEach { print("- \($0.title): \($0.trackers.count) трекеров") }
-        
-        DispatchQueue.main.async {
-            self.collectionView.reloadData()
-            self.updateStubVisibility()
+    func addNewTracker(_ tracker: Tracker, to selectedCategory: TrackerCategoryCoreData) {
+        do {
+            // Сохраняем трекер в Core Data
+            try trackerStore.addTracker(tracker, category: selectedCategory)
+            
+            // Обновляем локальные данные
+            let categoryTitle = selectedCategory.title ?? "Без категории"
+            
+            if let index = categories.firstIndex(where: { $0.title == categoryTitle }) {
+                var updatedTrackers = categories[index].trackers
+                updatedTrackers.append(tracker)
+                categories[index] = TrackerCategory(
+                    id: categories[index].id,
+                    title: categoryTitle,
+                    trackers: updatedTrackers
+                )
+            } else {
+                let newCategory = TrackerCategory(
+                    id: selectedCategory.id ?? UUID(),
+                    title: categoryTitle,
+                    trackers: [tracker]
+                )
+                categories.append(newCategory)
+            }
+            
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+                self.updateStubVisibility()
+            }
+        } catch {
+            print("❌ Ошибка при сохранении трекера: \(error)")
         }
     }
+    
+//    func addNewTracker(_ tracker: Tracker) {
+//        let categoryTitle = "Мои трекеры"
+//        
+//        if let index = categories.firstIndex(where: { $0.title == categoryTitle }) {
+//            print("Найдена категория 'Мои трекеры' (индекс \(index))")
+//            var updatedTrackers = categories[index].trackers
+//            updatedTrackers.append(tracker)
+//            categories[index] = TrackerCategory(id: categories[index].id, title: categoryTitle, trackers: updatedTrackers)
+//        } else {
+//            print("Создаем новую категорию 'Мои трекеры'")
+//            categories.append(TrackerCategory(id: UUID(), title: categoryTitle, trackers: [tracker]))
+//        }
+//        
+//        print("Текущие категории после обновления:")
+//            categories.forEach { print("- \($0.title): \($0.trackers.count) трекеров") }
+//        
+//        DispatchQueue.main.async {
+//            self.collectionView.reloadData()
+//            self.updateStubVisibility()
+//        }
+//    }
 }
 
 extension TrackerViewController: AddTrackerDelegate {
-    func didCreateTracker(_ tracker: Tracker) {
-        addNewTracker(tracker)
+    func didCreateTracker(_ tracker: Tracker, in category: TrackerCategoryCoreData) {
+        addNewTracker(tracker, to: category)
     }
 }

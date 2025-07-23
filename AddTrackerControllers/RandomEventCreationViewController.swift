@@ -3,8 +3,8 @@ import UIKit
 final class RandomEventCreationViewController: UIViewController {
     
     private var trackerTitle: String = ""
-    
-    var onTrackerCreated: ((Tracker) -> Void)?
+    var onTrackerCreated: ((Tracker, TrackerCategoryCoreData) -> Void)?
+    private var selectedCategory: TrackerCategoryCoreData?
     
     private let scrollView: UIScrollView = {
         let sv = UIScrollView()
@@ -239,9 +239,12 @@ final class RandomEventCreationViewController: UIViewController {
             emoji: "😄",
             schedule: nil
         )
-        
+        guard let selectedCategory = selectedCategory else {
+            showError("Пожалуйста, выберите категорию")
+            return
+        }
         // Используем замыкание для передачи трекера
-        onTrackerCreated?(newTracker)
+        onTrackerCreated?(newTracker, selectedCategory)
         navigationController?.popToRootViewController(animated: true)
         dismiss(animated: true)
     }

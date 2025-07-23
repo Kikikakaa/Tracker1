@@ -28,24 +28,56 @@ final class LaunchScreenViewController: UIViewController {
     }
     
     private func showMainScreen() {
-        let tabBarController = TabBarController()
         
-        let navController = UINavigationController(rootViewController: tabBarController)
-        navController.isNavigationBarHidden = true
+        let hasSeenOnboarding = UserDefaultsService.shared.hasSeenOnboarding
         
         guard let window = LaunchScreenViewController.window else {
             print("❌ Не удалось получить окно")
             return
         }
         
-        window.rootViewController = navController
-        UIView.transition(
-            with: window,
-            duration: 0.5,
-            options: .transitionCrossDissolve,
-            animations: nil,
-            completion: nil
-        )
+        if hasSeenOnboarding {
+            let tabBarController = TabBarController()
+            
+            let navController = UINavigationController(rootViewController: tabBarController)
+            navController.isNavigationBarHidden = true
+            
+            window.rootViewController = navController
+            UIView.transition(
+                with: window,
+                duration: 0.5,
+                options: .transitionCrossDissolve,
+                animations: nil,
+                completion: nil
+            )
+        } else {
+            let onboardingVC = OnboardingViewController()
+            onboardingVC.onFinish = {
+                UserDefaultsService.shared.hasSeenOnboarding = true
+                
+                let tabBarController = TabBarController()
+                
+                let navController = UINavigationController(rootViewController: tabBarController)
+                navController.isNavigationBarHidden = true
+                
+                window.rootViewController = navController
+                UIView.transition(
+                    with: window,
+                    duration: 0.5,
+                    options: .transitionCrossDissolve,
+                    animations: nil,
+                    completion: nil
+                )
+            }
+            window.rootViewController = onboardingVC
+            UIView.transition(
+                with: window,
+                duration: 0.5,
+                options: .transitionCrossDissolve,
+                animations: nil,
+                completion: nil
+            )
+        }
     }
     
     private func setupUI() {

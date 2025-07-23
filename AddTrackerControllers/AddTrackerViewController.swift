@@ -1,7 +1,7 @@
 import UIKit
 
 protocol AddTrackerDelegate: AnyObject {
-    func didCreateTracker(_ tracker: Tracker)
+    func didCreateTracker(_ tracker: Tracker, in category: TrackerCategoryCoreData)
 }
 
 final class AddTrackerViewController: UIViewController {
@@ -69,16 +69,16 @@ final class AddTrackerViewController: UIViewController {
     @objc private func addHabitTapped() {
         let habitCreationVC = HabitCreationViewController()
         // Передаем ссылку на TrackerViewController через замыкание
-        habitCreationVC.onTrackerCreated = { [weak self] tracker in
-            self?.delegate?.didCreateTracker(tracker)
+        habitCreationVC.onTrackerCreated = { [weak self] (tracker: Tracker, category: TrackerCategoryCoreData) in
+            self?.delegate?.didCreateTracker(tracker, in: category)
         }
         navigationController?.pushViewController(habitCreationVC, animated: true)
     }
     
     @objc private func addRandomEventTapped() {
         let randomEventCreationVC = RandomEventCreationViewController()
-        randomEventCreationVC.onTrackerCreated = { [weak self] tracker in
-            self?.delegate?.didCreateTracker(tracker)
+        randomEventCreationVC.onTrackerCreated = { [weak self] tracker, category in
+            self?.delegate?.didCreateTracker(tracker, in: category)
         }
         navigationController?.pushViewController(randomEventCreationVC, animated: true)
     }

@@ -30,7 +30,7 @@ final class TrackerStore: NSObject {
     }
     
     // MARK: - CRUD
-    func addTracker(_ tracker: Tracker) throws {
+    func addTracker(_ tracker: Tracker, category: TrackerCategoryCoreData?) throws {
         let trackerCoreData = TrackerCoreData(context: context)
         trackerCoreData.id = tracker.id
         trackerCoreData.title = tracker.title
@@ -50,18 +50,7 @@ final class TrackerStore: NSObject {
             }
         }
         
-        // Создаем или находим категорию
-        let categoryRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        categoryRequest.predicate = NSPredicate(format: "title == %@", "Мои трекеры")
-        
-        if let existingCategory = try? context.fetch(categoryRequest).first {
-            trackerCoreData.category = existingCategory
-        } else {
-            let newCategory = TrackerCategoryCoreData(context: context)
-            newCategory.id = UUID()
-            newCategory.title = "Мои трекеры"
-            trackerCoreData.category = newCategory
-        }
+        trackerCoreData.category = category
         
         try context.save()
     }
