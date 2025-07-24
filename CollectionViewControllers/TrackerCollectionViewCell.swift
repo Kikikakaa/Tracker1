@@ -94,7 +94,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     func configure(with tracker: Tracker, completedDays: Int, isCompleted: Bool) {
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
-        daysCountLabel.text = getDayString(for: completedDays)
+        daysCountLabel.text = daysWord(for: completedDays)
         containerView.backgroundColor = tracker.color
         let buttonImage = isCompleted ? UIImage(resource: .doneIcon).withRenderingMode(.alwaysTemplate) : UIImage(resource: .plus).withRenderingMode(.alwaysTemplate)
         completeButton.setImage(buttonImage, for: .normal)
@@ -105,19 +105,6 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         else {
             completeButton.tintColor = tracker.color
             completeButton.backgroundColor = .white
-        }
-    }
-    
-    private func getDayString(for days: Int) -> String {
-        let remainder10 = days % 10
-        let remainder100 = days % 100
-        
-        if remainder10 == 1 && remainder100 != 11 {
-            return "\(days) день"
-        } else if remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 10 || remainder100 >= 20) {
-            return "\(days) дня"
-        } else {
-            return "\(days) дней"
         }
     }
     

@@ -96,6 +96,11 @@
 			path = Help;
 			sourceTree = "<group>";
 		};
+		CE7026122E31A3D80060B342 /* Resources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		CEDB57E32E12B3F000CE7229 /* AddTrackerControllers */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AddTrackerControllers;
@@ -132,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				CEBE52B02E1C3ED400A53775 /* CoreData */,
+				CE7026122E31A3D80060B342 /* Resources */,
 				CE26456C2DE854B600514B83 /* Tracker1 */,
 				CE2645C32DE8579B00514B83 /* Help */,
 				CE080D912E17BC4800A47A79 /* AddTrackerCollectionViewControllers */,
@@ -183,6 +189,7 @@
 				CE26456C2DE854B600514B83 /* Tracker1 */,
 				CE2645C12DE8577500514B83 /* MainMenuControllers */,
 				CE2645C32DE8579B00514B83 /* Help */,
+				CE7026122E31A3D80060B342 /* Resources */,
 				CEDB57E32E12B3F000CE7229 /* AddTrackerControllers */,
 			);
 			name = Tracker1;

@@ -145,7 +145,7 @@ final class CategoryViewController: UIViewController {
         appearance.backgroundColor = .ypWhite
         appearance.shadowColor = nil
         appearance.titleTextAttributes = [
-            .font: UIFont.systemFont(ofSize: 12, weight: .medium),
+            .font: UIFont.systemFont(ofSize: 16, weight: .medium),
             .foregroundColor: UIColor.ypBlack
         ]
         navigationController?.navigationBar.standardAppearance = appearance
