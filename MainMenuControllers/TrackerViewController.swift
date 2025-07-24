@@ -3,6 +3,7 @@ import UIKit
 final class TrackerViewController: UIViewController {
     
     private var categories: [TrackerCategory] = []
+    private var visibleCategories: [TrackerCategory] = []
     private var completedTrackers: [TrackerRecord] = []
     private var currentDate = Date()
     private let trackerStore = TrackerStore(context: CoreDataManager.shared.context)
@@ -24,6 +25,7 @@ final class TrackerViewController: UIViewController {
         searchBar.searchBarStyle = .minimal
         searchBar.placeholder = NSLocalizedString("search_placeholder", comment: "")
         searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.delegate = self
         
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.translatesAutoresizingMaskIntoConstraints = false
@@ -104,28 +106,79 @@ final class TrackerViewController: UIViewController {
         setupCollectionView()
         trackerAddButton.addTarget(self, action: #selector(addTrackerTapped), for: .touchUpInside)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
         loadData()
+        updateVisibleCategories()
         collectionView.reloadData()
         updateStubVisibility()
     }
     
     private func loadData() {
         do {
+            // Очищаем локальные массивы перед загрузкой
+            categories.removeAll()
+            completedTrackers.removeAll()
+            visibleCategories.removeAll()
+            
             // Загрузка категорий и трекеров из Core Data
             let coreDataCategories = try categoryStore.fetchAllCategories()
-            categories = coreDataCategories
+            
+            // Проверяем на дублирование трекеров на уровне загрузки
+            var uniqueCategories: [TrackerCategory] = []
+            var seenTrackerIds: Set<UUID> = []
+            
+            for category in coreDataCategories {
+                var uniqueTrackers: [Tracker] = []
+                
+                for tracker in category.trackers {
+                    if !seenTrackerIds.contains(tracker.id) {
+                        seenTrackerIds.insert(tracker.id)
+                        uniqueTrackers.append(tracker)
+                    } else {
+                        print("⚠️ Пропускаем дублированный трекер: \(tracker.title) (ID: \(tracker.id))")
+                    }
+                }
+                
+                if !uniqueTrackers.isEmpty {
+                    uniqueCategories.append(TrackerCategory(
+                        id: category.id,
+                        title: category.title,
+                        trackers: uniqueTrackers
+                    ))
+                }
+            }
+            
+            categories = uniqueCategories
             
             // Загрузка выполненных трекеров из Core Data
             completedTrackers = try recordStore.fetchAllRecords()
-            
-            print("✅ Данные успешно загружены:")
-            print("- Категорий: \(categories.count)")
-            print("- Записей о выполнении: \(completedTrackers.count)")
         } catch {
             print("❌ Ошибка загрузки данных: \(error)")
         }
     }
+    
+    private func updateVisibleCategories() {
+         let filteredByDate = filteredCategories()
+         
+         if let searchText = searchBar.text, !searchText.isEmpty {
+             // Фильтрация по поисковому запросу
+             visibleCategories = filteredByDate.compactMap { category in
+                 let filteredTrackers = category.trackers.filter { tracker in
+                     tracker.title.lowercased().contains(searchText.lowercased())
+                 }
+                 
+                 if !filteredTrackers.isEmpty {
+                     return TrackerCategory(id: category.id, title: category.title, trackers: filteredTrackers)
+                 } else {
+                     return nil
+                 }
+             }
+         } else {
+             // Без поиска - просто фильтрация по дате
+             visibleCategories = filteredByDate
+         }
+     }
     
     private func setupCollectionView() {
         collectionView.delegate = self
@@ -140,6 +193,7 @@ final class TrackerViewController: UIViewController {
     
     @objc private func dateChanged() {
         currentDate = datePicker.date
+        updateVisibleCategories()
         collectionView.reloadData()
         updateStubVisibility()
     }
@@ -307,7 +361,19 @@ final class TrackerViewController: UIViewController {
 }
 
 extension TrackerViewController: UICollectionViewDelegate {
-    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+         // Скрываем клавиатуру при прокрутке
+         if searchBar.isFirstResponder {
+             searchBar.resignFirstResponder()
+         }
+     }
+     
+     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+         // Скрываем клавиатуру при начале прокрутки
+         if searchBar.isFirstResponder {
+             searchBar.resignFirstResponder()
+         }
+     }
 }
 
 extension TrackerViewController: UICollectionViewDelegateFlowLayout {
@@ -327,20 +393,20 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
 
 extension TrackerViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        filteredCategories().count
+        visibleCategories.count
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        filteredCategories()[section].trackers.count
+        visibleCategories[section].trackers.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        print("\nЗапрошена ячейка для секции \(indexPath.section), строки \(indexPath.row)")
+        
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? TrackerCollectionViewCell else {
             print("⚠️ Ошибка: Не удалось создать ячейку")
             return UICollectionViewCell()
         }
-        let category = filteredCategories()[indexPath.section]
+        let category = visibleCategories[indexPath.section]
         let tracker = category.trackers[indexPath.item]
         let isCompleted = isTrackerCompletedToday(tracker)
         let daysCompleted = daysCompleted(for: tracker)
@@ -377,7 +443,7 @@ extension TrackerViewController: UICollectionViewDataSource {
             return UICollectionReusableView()
         }
         
-        let category = filteredCategories()[indexPath.section]
+        let category = visibleCategories[indexPath.section]
         header.titleLabel.text = category.title
         
         return header
@@ -387,6 +453,26 @@ extension TrackerViewController: UICollectionViewDataSource {
         return CGSize(width: collectionView.bounds.width, height: 20)
     }
     
+}
+
+extension TrackerViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        updateVisibleCategories()
+        collectionView.reloadData()
+        updateStubVisibility()
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        searchBar.resignFirstResponder()
+        updateVisibleCategories()
+        collectionView.reloadData()
+        updateStubVisibility()
+    }
 }
 
 extension TrackerViewController {
@@ -424,6 +510,7 @@ extension TrackerViewController {
             }
             
             DispatchQueue.main.async {
+                self.updateVisibleCategories()
                 self.collectionView.reloadData()
                 self.updateStubVisibility()
             }

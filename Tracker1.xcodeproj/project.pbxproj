@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CEA30E752E32874100C5276A /* AppMetricaAdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = CEA30E742E32874100C5276A /* AppMetricaAdSupport */; };
+		CEA30E772E32874100C5276A /* AppMetricaCore in Frameworks */ = {isa = PBXBuildFile; productRef = CEA30E762E32874100C5276A /* AppMetricaCore */; };
+		CEA30E792E32874100C5276A /* AppMetricaCrashes in Frameworks */ = {isa = PBXBuildFile; productRef = CEA30E782E32874100C5276A /* AppMetricaCrashes */; };
+		CEA30E7B2E32874100C5276A /* AppMetricaLibraryAdapter in Frameworks */ = {isa = PBXBuildFile; productRef = CEA30E7A2E32874100C5276A /* AppMetricaLibraryAdapter */; };
+		CEA30E7D2E32874100C5276A /* AppMetricaScreenshot in Frameworks */ = {isa = PBXBuildFile; productRef = CEA30E7C2E32874100C5276A /* AppMetricaScreenshot */; };
 		CEBE52B32E1C3F3900A53775 /* TrackerCatalog.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CEBE52B12E1C3F3900A53775 /* TrackerCatalog.xcdatamodeld */; };
 		CEBE52F52E1D1A7900A53775 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBE52F42E1D1A6A00A53775 /* CoreDataManager.swift */; };
 		CEBE52F72E1E5E6000A53775 /* TrackerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBE52F62E1E5E5400A53775 /* TrackerStore.swift */; };
@@ -113,6 +118,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEA30E7B2E32874100C5276A /* AppMetricaLibraryAdapter in Frameworks */,
+				CEA30E792E32874100C5276A /* AppMetricaCrashes in Frameworks */,
+				CEA30E752E32874100C5276A /* AppMetricaAdSupport in Frameworks */,
+				CEA30E7D2E32874100C5276A /* AppMetricaScreenshot in Frameworks */,
+				CEA30E772E32874100C5276A /* AppMetricaCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -194,6 +204,11 @@
 			);
 			name = Tracker1;
 			packageProductDependencies = (
+				CEA30E742E32874100C5276A /* AppMetricaAdSupport */,
+				CEA30E762E32874100C5276A /* AppMetricaCore */,
+				CEA30E782E32874100C5276A /* AppMetricaCrashes */,
+				CEA30E7A2E32874100C5276A /* AppMetricaLibraryAdapter */,
+				CEA30E7C2E32874100C5276A /* AppMetricaScreenshot */,
 			);
 			productName = Tracker1;
 			productReference = CE4EB5272DF5DFB100FA9EAB /* Tracker1.app */;
@@ -268,9 +283,13 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = CE2645612DE854B600514B83;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CEA30E732E32874100C5276A /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CE2645612DE854B600514B83;
 			projectDirPath = "";
@@ -631,6 +650,45 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CEA30E732E32874100C5276A /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/appmetrica/appmetrica-sdk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.11.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CEA30E742E32874100C5276A /* AppMetricaAdSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CEA30E732E32874100C5276A /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */;
+			productName = AppMetricaAdSupport;
+		};
+		CEA30E762E32874100C5276A /* AppMetricaCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CEA30E732E32874100C5276A /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */;
+			productName = AppMetricaCore;
+		};
+		CEA30E782E32874100C5276A /* AppMetricaCrashes */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CEA30E732E32874100C5276A /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */;
+			productName = AppMetricaCrashes;
+		};
+		CEA30E7A2E32874100C5276A /* AppMetricaLibraryAdapter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CEA30E732E32874100C5276A /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */;
+			productName = AppMetricaLibraryAdapter;
+		};
+		CEA30E7C2E32874100C5276A /* AppMetricaScreenshot */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CEA30E732E32874100C5276A /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */;
+			productName = AppMetricaScreenshot;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		CEBE52B12E1C3F3900A53775 /* TrackerCatalog.xcdatamodeld */ = {
