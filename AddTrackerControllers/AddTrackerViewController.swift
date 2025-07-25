@@ -5,7 +5,12 @@ protocol AddTrackerDelegate: AnyObject {
 }
 
 final class AddTrackerViewController: UIViewController {
+    enum Mode {
+        case create
+        case edit(Tracker)
+    }
     
+    var mode: Mode = .create
     weak var delegate: AddTrackerDelegate?
     
     private lazy var titleLabel: UILabel = {
@@ -68,7 +73,9 @@ final class AddTrackerViewController: UIViewController {
     
     @objc private func addHabitTapped() {
         let habitCreationVC = HabitCreationViewController()
-        // Передаем ссылку на TrackerViewController через замыкание
+        if case .edit(let tracker) = mode {
+            habitCreationVC.mode = .edit(tracker)
+        }
         habitCreationVC.onTrackerCreated = { [weak self] (tracker: Tracker, category: TrackerCategoryCoreData) in
             self?.delegate?.didCreateTracker(tracker, in: category)
         }

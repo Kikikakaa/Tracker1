@@ -4,6 +4,9 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     static let identifier = "TrackerCollectionViewCell"
     
     var onCompleteButtonTapped: (() -> Void)?
+    var onPinButtonTapped: (() -> Void)?
+    var onEditButtonTapped: (() -> Void)?
+    var onDeleteButtonTapped: (() -> Void)?
     
     private let containerView: UIView = {
         let view = UIView()
@@ -50,9 +53,66 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(
+            identifier: nil,
+            previewProvider: nil,
+            actionProvider: { [weak self] _ in
+                return self?.createContextMenu()
+            }
+        )
+    }
+    private func createContextMenu() -> UIMenu {
+        // Пункт "Закрепить/Открепить"
+        let pinAction = UIAction(
+            title: isPinned ? "Открепить" : "Закрепить",
+            image: UIImage(systemName: isPinned ? "pin.slash.fill" : "pin.fill")
+        ) { [weak self] _ in
+            self?.onPinButtonTapped?()
+        }
+        
+        // Пункт "Редактировать"
+        let editAction = UIAction(
+            title: "Редактировать",
+            image: UIImage(systemName: "square.and.pencil")
+        ) { [weak self] _ in
+            self?.onEditButtonTapped?()
+        }
+        
+        // Пункт "Удалить" (красный)
+        let deleteAction = UIAction(
+            title: "Удалить",
+            image: UIImage(systemName: "trash"),
+            attributes: .destructive
+        ) { [weak self] _ in
+            self?.onDeleteButtonTapped?()
+        }
+        
+        // Создаем меню
+        return UIMenu(title: "", children: [pinAction, editAction, deleteAction])
+    }
+        
+    private var isPinned: Bool = false
+    
+    func configure(with tracker: Tracker, completedDays: Int, isCompleted: Bool, isPinned: Bool) {
+        emojiLabel.text = tracker.emoji
+        titleLabel.text = tracker.title
+        daysCountLabel.text = daysWord(for: completedDays)
+        containerView.backgroundColor = tracker.color
+        let buttonImage = isCompleted ? UIImage(resource: .doneIcon).withRenderingMode(.alwaysTemplate) : UIImage(resource: .plus).withRenderingMode(.alwaysTemplate)
+        completeButton.setImage(buttonImage, for: .normal)
+        completeButton.tintColor = isCompleted ? tracker.color.withAlphaComponent(0.9) : tracker.color
+        completeButton.backgroundColor = .white
+        self.isPinned = isPinned
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
+        addInteraction(UIContextMenuInteraction(delegate: self))
     }
     
     required init?(coder: NSCoder) {
@@ -111,4 +171,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     @objc private func completeButtonTapped() {
         onCompleteButtonTapped?()
     }
+}
+
+extension TrackerCollectionViewCell: UIContextMenuInteractionDelegate {
 }

@@ -36,6 +36,19 @@ final class TrackerCategoryStore: NSObject {
         return category
     }
     
+    func fetchCategory(for trackerId: UUID) throws -> TrackerCategoryCoreData? {
+        let request = TrackerCategoryCoreData.fetchRequest()
+        let categories = try context.fetch(request)
+        
+        for category in categories {
+            if let trackers = category.trackers?.allObjects as? [TrackerCoreData],
+               trackers.contains(where: { $0.id == trackerId }) {
+                return category
+            }
+        }
+        return nil
+    }
+    
     func fetchAllCategories() throws -> [TrackerCategory] {
           let request = TrackerCategoryCoreData.fetchRequest()
           let categories = try context.fetch(request)

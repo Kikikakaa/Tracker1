@@ -109,6 +109,13 @@ final class TrackerViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
+        
+        do {
+            try trackerStore.cleanupDuplicates()
+        } catch {
+            print("❌ Ошибка очистки дубликатов: \(error)")
+        }
+        
         loadData()
         updateVisibleCategories()
         collectionView.reloadData()
@@ -122,14 +129,18 @@ final class TrackerViewController: UIViewController {
             completedTrackers.removeAll()
             visibleCategories.removeAll()
             
+            // Сначала очищаем дубликаты в Core Data
+            try trackerStore.cleanupDuplicates()
+            
             // Загрузка категорий и трекеров из Core Data
             let coreDataCategories = try categoryStore.fetchAllCategories()
             
-            // Проверяем на дублирование трекеров на уровне загрузки
+            // Теперь дубликаты уже не должны появляться, но оставляем проверку как дополнительную защиту
             var uniqueCategories: [TrackerCategory] = []
-            var seenTrackerIds: Set<UUID> = []
             
             for category in coreDataCategories {
+                // Создаем Set для отслеживания уникальных ID трекеров в этой категории
+                var seenTrackerIds: Set<UUID> = []
                 var uniqueTrackers: [Tracker] = []
                 
                 for tracker in category.trackers {
@@ -137,7 +148,7 @@ final class TrackerViewController: UIViewController {
                         seenTrackerIds.insert(tracker.id)
                         uniqueTrackers.append(tracker)
                     } else {
-                        print("⚠️ Пропускаем дублированный трекер: \(tracker.title) (ID: \(tracker.id))")
+                        print("⚠️ Обнаружен дубликат трекера в категории: \(tracker.title) (ID: \(tracker.id))")
                     }
                 }
                 
@@ -154,13 +165,16 @@ final class TrackerViewController: UIViewController {
             
             // Загрузка выполненных трекеров из Core Data
             completedTrackers = try recordStore.fetchAllRecords()
+            
+            print("✅ Загружено \(categories.count) категорий с \(categories.flatMap { $0.trackers }.count) уникальными трекерами")
+            
         } catch {
             print("❌ Ошибка загрузки данных: \(error)")
         }
     }
     
     private func updateVisibleCategories() {
-         let filteredByDate = filteredCategories()
+        let filteredByDate = filteredCategories()
          
          if let searchText = searchBar.text, !searchText.isEmpty {
              // Фильтрация по поисковому запросу
@@ -385,6 +399,10 @@ extension TrackerViewController: UICollectionViewDelegate {
              searchBar.resignFirstResponder()
          }
      }
+    
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        return nil // Используем контекстное меню из ячейки
+    }
 }
 
 extension TrackerViewController: UICollectionViewDelegateFlowLayout {
@@ -421,8 +439,9 @@ extension TrackerViewController: UICollectionViewDataSource {
         let tracker = category.trackers[indexPath.item]
         let isCompleted = isTrackerCompletedToday(tracker)
         let daysCompleted = daysCompleted(for: tracker)
+        let isPinned = false
         
-        cell.configure(with: tracker, completedDays: daysCompleted, isCompleted: isCompleted)
+        cell.configure(with: tracker, completedDays: daysCompleted, isCompleted: isCompleted, isPinned: isPinned)
         
         let isFutureDate = currentDate > Date()
         cell.completeButton.isEnabled = !isFutureDate
@@ -435,6 +454,18 @@ extension TrackerViewController: UICollectionViewDataSource {
             } else {
                 self.completeTracker(tracker)
             }
+        }
+        
+        cell.onPinButtonTapped = { [weak self] in
+            self?.togglePin(for: tracker)
+        }
+        
+        cell.onEditButtonTapped = { [weak self] in
+            self?.editTracker(tracker)
+        }
+        
+        cell.onDeleteButtonTapped = { [weak self] in
+            self?.showDeleteConfirmation(for: tracker)
         }
         
         return cell
@@ -539,10 +570,131 @@ extension TrackerViewController {
             print("❌ Ошибка при сохранении трекера: \(error)")
         }
     }
+    
+    private func togglePin(for tracker: Tracker) {
+        // Реализация переключения состояния закрепления
+        print("Закрепить/открепить трекер: \(tracker.title)")
+        // Здесь нужно обновить состояние в CoreData и перезагрузить данные
+    }
+    
+    private func editTracker(_ tracker: Tracker) {
+        let habitCreationVC = HabitCreationViewController()
+        habitCreationVC.mode = .edit(tracker) // Устанавливаем режим редактирования
+        
+        // Find the category for the tracker
+        if let category = try? categoryStore.fetchCategory(for: tracker.id) {
+            habitCreationVC.selectedCategory = category
+        }
+        
+        // Важно: устанавливаем делегат для обработки результата
+        habitCreationVC.onTrackerCreated = { [weak self] updatedTracker, category in
+            // Используем метод делегата для единообразной обработки
+            self?.didCreateTracker(updatedTracker, in: category)
+        }
+        
+        present(habitCreationVC, animated: true)
+    }
+    
+    private func updateTracker(_ tracker: Tracker, in category: TrackerCategoryCoreData) {
+        do {
+            try trackerStore.updateTracker(tracker, in: category)
+            loadData()
+            updateVisibleCategories()
+            collectionView.reloadData()
+            updateStubVisibility()
+        } catch {
+            print("❌ Ошибка при обновлении трекера: \(error)")
+        }
+    }
+    
+    private func deleteTracker(_ tracker: Tracker) {
+        do {
+            // 1. Удаляем все записи о выполнении трекера
+            try recordStore.deleteAllRecords(for: tracker.id)
+            
+            // 2. Удаляем сам трекер
+            try trackerStore.deleteTracker(tracker.id)
+            // Обновляем локальные данные
+            for (index, category) in categories.enumerated() {
+                if let trackerIndex = category.trackers.firstIndex(where: { $0.id == tracker.id }) {
+                    var updatedTrackers = category.trackers
+                    updatedTrackers.remove(at: trackerIndex)
+                    
+                    if updatedTrackers.isEmpty {
+                        categories.remove(at: index)
+                        } else {
+                            categories[index] = TrackerCategory(
+                                id: category.id,
+                                title: category.title,
+                                trackers: updatedTrackers
+                            )
+                        }
+                        break
+                    }
+                }
+                
+                completedTrackers.removeAll { $0.trackerId == tracker.id }
+                
+                DispatchQueue.main.async {
+                    self.updateVisibleCategories()
+                    self.collectionView.reloadData()
+                    self.updateStubVisibility()
+                }
+                
+            } catch {
+                print("❌ Ошибка при удалении трекера: \(error)")
+            }
+        }
+    
+    private func showDeleteConfirmation(for tracker: Tracker) {
+        let alert = UIAlertController(
+            title: "Удаление трекера",
+            message: "Вы уверены, что хотите удалить трекер \"\(tracker.title)\"?",
+            preferredStyle: .actionSheet
+        )
+        
+        alert.addAction(UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+            self?.deleteTracker(tracker)
+        })
+        
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
+        
+        present(alert, animated: true)
+    }
+    
 }
 
 extension TrackerViewController: AddTrackerDelegate {
     func didCreateTracker(_ tracker: Tracker, in category: TrackerCategoryCoreData) {
-        addNewTracker(tracker, to: category)
+        // Проверяем, есть ли уже трекер с таким ID в массиве
+        var trackerExists = false
+        
+        for (categoryIndex, existingCategory) in categories.enumerated() {
+            if let trackerIndex = existingCategory.trackers.firstIndex(where: { $0.id == tracker.id }) {
+                // Трекер найден - это редактирование
+                trackerExists = true
+                var updatedTrackers = existingCategory.trackers
+                updatedTrackers[trackerIndex] = tracker
+                
+                categories[categoryIndex] = TrackerCategory(
+                    id: existingCategory.id,
+                    title: existingCategory.title,
+                    trackers: updatedTrackers
+                )
+                break
+            }
+        }
+        
+        // Если трекер не найден, добавляем как новый
+        if !trackerExists {
+            addNewTracker(tracker, to: category)
+        } else {
+            // Если найден, просто обновляем UI
+            DispatchQueue.main.async {
+                self.updateVisibleCategories()
+                self.collectionView.reloadData()
+                self.updateStubVisibility()
+            }
+        }
     }
 }

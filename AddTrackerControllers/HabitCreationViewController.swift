@@ -1,6 +1,12 @@
 import UIKit
 
 final class HabitCreationViewController: UIViewController {
+    enum Mode {
+        case create
+        case edit(Tracker)
+    }
+    
+    var mode: Mode = .create
     private let trackerStore = TrackerStore(context: CoreDataManager.shared.context)
     private let categoryStore = TrackerCategoryStore(context: CoreDataManager.shared.context)
     private var schedule: [Weekday] = []
@@ -22,7 +28,7 @@ final class HabitCreationViewController: UIViewController {
     ]
     private var selectedEmojiIndex: Int?
     private var selectedColorIndex: Int?
-    private var selectedCategory: TrackerCategoryCoreData?
+    var selectedCategory: TrackerCategoryCoreData?
     var onTrackerCreated: ((Tracker, TrackerCategoryCoreData) -> Void)?
     private let cellIdentifier = AddTrackerCollectionViewCell().cellIdentifier
     private let collectionView = {
@@ -252,6 +258,39 @@ final class HabitCreationViewController: UIViewController {
         setupUI()
         setupCollectionView()
         keyboardConfigure()
+        if case .edit(let tracker) = mode {
+            setupForEditMode(with: tracker)
+        }
+    }
+    
+    private func setupForEditMode(with tracker: Tracker) {
+        titleLabel.text = "Редактирование привычки"
+        nameTextField.text = tracker.title
+        trackerTitle = tracker.title
+        
+        // Устанавливаем выбранные эмодзи и цвет
+        if let emojiIndex = emojies.firstIndex(of: tracker.emoji) {
+            selectedEmojiIndex = emojiIndex
+        }
+        
+        if let colorIndex = colors.firstIndex(where: { $0 == tracker.color }) {
+            selectedColorIndex = colorIndex
+        }
+        
+        // Устанавливаем расписание
+        if let schedule = tracker.schedule {
+            self.schedule = schedule
+            scheduleDetailsLabel.text = scheduleText(for: schedule)
+        }
+        
+        if let category = try? categoryStore.fetchCategory(for: tracker.id) {
+                   selectedCategory = category
+                   categoryDetailsLabel.text = category.title
+               }
+        
+        // Обновляем кнопку
+        createButton.setTitle("Сохранить", for: .normal)
+        updateCreateButtonState()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -376,8 +415,16 @@ final class HabitCreationViewController: UIViewController {
             return
         }
         
+        // Исправление: используем существующий ID при редактировании
+        let trackerId: UUID
+        if case .edit(let existingTracker) = mode {
+            trackerId = existingTracker.id // Используем существующий ID
+        } else {
+            trackerId = UUID() // Создаем новый ID только для новых трекеров
+        }
+        
         let newTracker = Tracker(
-            id: UUID(),
+            id: trackerId, // Используем правильный ID
             title: trackerTitle,
             color: colors[selectedColorIndex],
             emoji: emojies[selectedEmojiIndex],
@@ -385,7 +432,11 @@ final class HabitCreationViewController: UIViewController {
         )
         
         do {
-            try trackerStore.addTracker(newTracker, category: selectedCategory)
+            if case .edit = mode {
+                try trackerStore.updateTracker(newTracker, in: selectedCategory)
+            } else {
+                try trackerStore.addTracker(newTracker, category: selectedCategory)
+            }
             onTrackerCreated?(newTracker, selectedCategory)
             dismiss(animated: true)
         } catch {

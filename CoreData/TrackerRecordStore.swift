@@ -84,6 +84,21 @@ final class TrackerRecordStore {
         }
     }
     
+    func deleteAllRecords(for trackerId: UUID) throws {
+        let request = TrackerRecordCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "trackerId == %@", trackerId as CVarArg)
+        
+        let records = try context.fetch(request)
+        for record in records {
+            context.delete(record)
+        }
+        
+        if !records.isEmpty {
+            try context.save()
+            print("✅ Удалено \(records.count) записей для трекера \(trackerId)")
+        }
+    }
+    
     func countRecords(for trackerId: UUID) throws -> Int {
         let request = TrackerRecordCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "trackerId == %@", trackerId as CVarArg)

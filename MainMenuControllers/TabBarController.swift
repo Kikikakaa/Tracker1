@@ -10,7 +10,7 @@ final class TabBarController: UITabBarController {
             image: UIImage(resource: .recordCircle),
             tag: 0)
         
-        let statsVC = StatisticsViewController()
+        let statsVC = StatisticViewController()
         statsVC.tabBarItem = UITabBarItem(
             title: NSLocalizedString("tab_statistics", comment: "Статистика"),
             image: UIImage(resource: .hare),
