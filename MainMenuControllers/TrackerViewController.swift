@@ -66,8 +66,9 @@ final class TrackerViewController: UIViewController {
     }()
     
     private lazy var trackerAddButton: UIButton = {
-        let button =  UIButton()
-        button.setImage(UIImage(resource: .addTracker), for: .normal)
+        let button =  UIButton(type: .system)
+        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        button.tintColor = .label
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -193,6 +194,7 @@ final class TrackerViewController: UIViewController {
     
     @objc private func dateChanged() {
         currentDate = datePicker.date
+        AnalyticsService.shared.trackDateChanged(selectedDate: currentDate)
         updateVisibleCategories()
         collectionView.reloadData()
         updateStubVisibility()
@@ -246,6 +248,14 @@ final class TrackerViewController: UIViewController {
             try recordStore.addRecord(trackerId: tracker.id, date: currentDate)
             let record = TrackerRecord(id: UUID(), trackerId: tracker.id, date: currentDate)
             completedTrackers.append(record)
+            
+            let completedDays = daysCompleted(for: tracker)
+            AnalyticsService.shared.trackTrackerCompleted(
+                trackerId: tracker.id,
+                trackerTitle: tracker.title,
+                isCompleted: true,
+                completedDaysCount: completedDays
+            )
         } catch {
             print("❌ Ошибка при сохранении записи: \(error)")
         }
@@ -304,6 +314,14 @@ final class TrackerViewController: UIViewController {
                 let calendar = Calendar.current
                 return calendar.isDate(record.date, inSameDayAs: currentDate) && record.trackerId == tracker.id
             }
+            
+            let completedDays = daysCompleted(for: tracker)
+            AnalyticsService.shared.trackTrackerCompleted(
+                trackerId: tracker.id,
+                trackerTitle: tracker.title,
+                isCompleted: false,
+                completedDaysCount: completedDays
+            )
         } catch {
             print("❌ Ошибка при удалении записи: \(error)")
         }
@@ -361,13 +379,6 @@ final class TrackerViewController: UIViewController {
 }
 
 extension TrackerViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-         // Скрываем клавиатуру при прокрутке
-         if searchBar.isFirstResponder {
-             searchBar.resignFirstResponder()
-         }
-     }
-     
      func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
          // Скрываем клавиатуру при начале прокрутки
          if searchBar.isFirstResponder {
@@ -457,6 +468,10 @@ extension TrackerViewController: UICollectionViewDataSource {
 
 extension TrackerViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+            AnalyticsService.shared.trackSearch(query: searchText)
+        }
+        
         updateVisibleCategories()
         collectionView.reloadData()
         updateStubVisibility()
@@ -488,6 +503,12 @@ extension TrackerViewController {
         do {
             // Сохраняем трекер в Core Data
             try trackerStore.addTracker(tracker, category: selectedCategory)
+            
+            AnalyticsService.shared.trackTrackerCreated(
+                 trackerTitle: tracker.title,
+                 category: selectedCategory.title ?? "Без категории",
+                 hasSchedule: tracker.schedule != nil
+             )
             
             // Обновляем локальные данные
             let categoryTitle = selectedCategory.title ?? "Без категории"
