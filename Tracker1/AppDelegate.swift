@@ -8,7 +8,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         WeekdayArrayTransformer.register()
-        if let configuration = AppMetricaConfiguration(apiKey: "3adbe745-f9bf-4134-a910-113d1bf491cd") { // используйте ваш ключ
+        if let configuration = AppMetricaConfiguration(apiKey: "") { // используйте ваш ключ
             AppMetrica.activate(with: configuration)
         }
         return true
