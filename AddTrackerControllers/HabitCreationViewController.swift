@@ -1,10 +1,6 @@
 import UIKit
 
 final class HabitCreationViewController: UIViewController {
-    enum Mode {
-        case create
-        case edit(Tracker)
-    }
     
     var mode: Mode = .create
     private let trackerStore = TrackerStore(context: CoreDataManager.shared.context)
@@ -284,9 +280,9 @@ final class HabitCreationViewController: UIViewController {
         }
         
         if let category = try? categoryStore.fetchCategory(for: tracker.id) {
-                   selectedCategory = category
-                   categoryDetailsLabel.text = category.title
-               }
+            selectedCategory = category
+            categoryDetailsLabel.text = category.title
+        }
         
         // Обновляем кнопку
         createButton.setTitle("Сохранить", for: .normal)
@@ -303,7 +299,7 @@ final class HabitCreationViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.register(AddTrackerCollectionViewCell.self, forCellWithReuseIdentifier: cellIdentifier)
         collectionView.register(AddTrackerSectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: AddTrackerSectionHeaderView.identifier)
-        collectionView.allowsMultipleSelection = false 
+        collectionView.allowsMultipleSelection = false
     }
     
     private func keyboardConfigure() {
@@ -525,31 +521,31 @@ extension HabitCreationViewController: UITextFieldDelegate {
 extension HabitCreationViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch indexPath.section {
-               case 0: 
-                   if let previousIndex = selectedEmojiIndex {
-                       let previousIndexPath = IndexPath(row: previousIndex, section: 0)
-                       if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? AddTrackerCollectionViewCell {
-                           previousCell.setSelected(false)
-                       }
-                   }
-                   
-                   selectedEmojiIndex = indexPath.row
-                   if let newCell = collectionView.cellForItem(at: indexPath) as? AddTrackerCollectionViewCell {
-                       newCell.setSelected(true)
-                   }
-                   
-               case 1:
-                   if let previousIndex = selectedColorIndex {
-                       let previousIndexPath = IndexPath(row: previousIndex, section: 1)
-                       if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? AddTrackerCollectionViewCell {
-                           previousCell.setSelected(false)
-                       }
-                   }
-                   
-                   selectedColorIndex = indexPath.row
-                   if let newCell = collectionView.cellForItem(at: indexPath) as? AddTrackerCollectionViewCell {
-                       newCell.setSelected(true)
-                   }
+        case 0:
+            if let previousIndex = selectedEmojiIndex {
+                let previousIndexPath = IndexPath(row: previousIndex, section: 0)
+                if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? AddTrackerCollectionViewCell {
+                    previousCell.setSelected(false)
+                }
+            }
+            
+            selectedEmojiIndex = indexPath.row
+            if let newCell = collectionView.cellForItem(at: indexPath) as? AddTrackerCollectionViewCell {
+                newCell.setSelected(true)
+            }
+            
+        case 1:
+            if let previousIndex = selectedColorIndex {
+                let previousIndexPath = IndexPath(row: previousIndex, section: 1)
+                if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? AddTrackerCollectionViewCell {
+                    previousCell.setSelected(false)
+                }
+            }
+            
+            selectedColorIndex = indexPath.row
+            if let newCell = collectionView.cellForItem(at: indexPath) as? AddTrackerCollectionViewCell {
+                newCell.setSelected(true)
+            }
             
         default: break
         }
@@ -598,7 +594,7 @@ extension HabitCreationViewController: UICollectionViewDataSource {
         case 1:
             let isSelected = selectedColorIndex == indexPath.row
             cell.configure(with: colors[indexPath.row], isSelected: isSelected)
-        
+            
         default: break
         }
         
@@ -617,7 +613,7 @@ extension HabitCreationViewController: UICollectionViewDataSource {
             ofKind: kind,
             withReuseIdentifier: AddTrackerSectionHeaderView.identifier,
             for: indexPath)
-            as? AddTrackerSectionHeaderView else {
+                as? AddTrackerSectionHeaderView else {
             assertionFailure("Не удалось создать header типа TrackerSectionHeaderView")
             return UICollectionReusableView()
         }
@@ -626,7 +622,7 @@ extension HabitCreationViewController: UICollectionViewDataSource {
         case 1: header.titleLabel.text = "Цвет"
         default: break
         }
-            return header
+        return header
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {

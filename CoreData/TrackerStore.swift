@@ -193,30 +193,30 @@ final class TrackerStore: NSObject {
     }
     
     func cleanupDuplicates() throws {
-            let request = TrackerCoreData.fetchRequest()
-            let allTrackers = try context.fetch(request)
+        let request = TrackerCoreData.fetchRequest()
+        let allTrackers = try context.fetch(request)
+        
+        var seenIds: Set<UUID> = []
+        var duplicates: [TrackerCoreData] = []
+        
+        for tracker in allTrackers {
+            guard let id = tracker.id else { continue }
             
-            var seenIds: Set<UUID> = []
-            var duplicates: [TrackerCoreData] = []
-            
-            for tracker in allTrackers {
-                guard let id = tracker.id else { continue }
-                
-                if seenIds.contains(id) {
-                    duplicates.append(tracker)
-                } else {
-                    seenIds.insert(id)
-                }
-            }
-            
-            if !duplicates.isEmpty {
-                print("🧹 Очистка \(duplicates.count) дубликатов трекеров")
-                for duplicate in duplicates {
-                    context.delete(duplicate)
-                }
-                try context.save()
+            if seenIds.contains(id) {
+                duplicates.append(tracker)
+            } else {
+                seenIds.insert(id)
             }
         }
+        
+        if !duplicates.isEmpty {
+            print("🧹 Очистка \(duplicates.count) дубликатов трекеров")
+            for duplicate in duplicates {
+                context.delete(duplicate)
+            }
+            try context.save()
+        }
+    }
     
 }
 

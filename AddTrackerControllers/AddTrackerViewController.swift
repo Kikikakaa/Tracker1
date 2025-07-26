@@ -5,10 +5,6 @@ protocol AddTrackerDelegate: AnyObject {
 }
 
 final class AddTrackerViewController: UIViewController {
-    enum Mode {
-        case create
-        case edit(Tracker)
-    }
     
     var mode: Mode = .create
     weak var delegate: AddTrackerDelegate?
