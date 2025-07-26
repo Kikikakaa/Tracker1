@@ -1,0 +1,6 @@
+# Xcode
+**/xcuserdata/
+*.xcuserstate
+# Snapshot тесты (iOSSnapshotTestCase, SwiftSnapshotTesting и аналоги)
+**/__Snapshots__/
+*.png

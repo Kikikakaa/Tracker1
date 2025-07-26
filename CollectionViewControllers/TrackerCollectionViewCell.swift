@@ -4,6 +4,9 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     static let identifier = "TrackerCollectionViewCell"
     
     var onCompleteButtonTapped: (() -> Void)?
+    var onPinButtonTapped: (() -> Void)?
+    var onEditButtonTapped: (() -> Void)?
+    var onDeleteButtonTapped: (() -> Void)?
     
     private let containerView: UIView = {
         let view = UIView()
@@ -50,9 +53,66 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(
+            identifier: nil,
+            previewProvider: nil,
+            actionProvider: { [weak self] _ in
+                return self?.createContextMenu()
+            }
+        )
+    }
+    private func createContextMenu() -> UIMenu {
+        // Пункт "Закрепить/Открепить"
+        let pinAction = UIAction(
+            title: isPinned ? "Открепить" : "Закрепить",
+            image: UIImage(systemName: isPinned ? "pin.slash.fill" : "pin.fill")
+        ) { [weak self] _ in
+            self?.onPinButtonTapped?()
+        }
+        
+        // Пункт "Редактировать"
+        let editAction = UIAction(
+            title: "Редактировать",
+            image: UIImage(systemName: "square.and.pencil")
+        ) { [weak self] _ in
+            self?.onEditButtonTapped?()
+        }
+        
+        // Пункт "Удалить" (красный)
+        let deleteAction = UIAction(
+            title: "Удалить",
+            image: UIImage(systemName: "trash"),
+            attributes: .destructive
+        ) { [weak self] _ in
+            self?.onDeleteButtonTapped?()
+        }
+        
+        // Создаем меню
+        return UIMenu(title: "", children: [pinAction, editAction, deleteAction])
+    }
+        
+    private var isPinned: Bool = false
+    
+    func configure(with tracker: Tracker, completedDays: Int, isCompleted: Bool, isPinned: Bool) {
+        emojiLabel.text = tracker.emoji
+        titleLabel.text = tracker.title
+        daysCountLabel.text = daysWord(for: completedDays)
+        containerView.backgroundColor = tracker.color
+        let buttonImage = isCompleted ? UIImage(resource: .doneIcon).withRenderingMode(.alwaysTemplate) : UIImage(resource: .plus).withRenderingMode(.alwaysTemplate)
+        completeButton.setImage(buttonImage, for: .normal)
+        completeButton.tintColor = isCompleted ? tracker.color.withAlphaComponent(0.9) : tracker.color
+        completeButton.backgroundColor = .white
+        self.isPinned = isPinned
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
+        addInteraction(UIContextMenuInteraction(delegate: self))
     }
     
     required init?(coder: NSCoder) {
@@ -94,7 +154,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     func configure(with tracker: Tracker, completedDays: Int, isCompleted: Bool) {
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
-        daysCountLabel.text = getDayString(for: completedDays)
+        daysCountLabel.text = daysWord(for: completedDays)
         containerView.backgroundColor = tracker.color
         let buttonImage = isCompleted ? UIImage(resource: .doneIcon).withRenderingMode(.alwaysTemplate) : UIImage(resource: .plus).withRenderingMode(.alwaysTemplate)
         completeButton.setImage(buttonImage, for: .normal)
@@ -108,20 +168,10 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         }
     }
     
-    private func getDayString(for days: Int) -> String {
-        let remainder10 = days % 10
-        let remainder100 = days % 100
-        
-        if remainder10 == 1 && remainder100 != 11 {
-            return "\(days) день"
-        } else if remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 10 || remainder100 >= 20) {
-            return "\(days) дня"
-        } else {
-            return "\(days) дней"
-        }
-    }
-    
     @objc private func completeButtonTapped() {
         onCompleteButtonTapped?()
     }
+}
+
+extension TrackerCollectionViewCell: UIContextMenuInteractionDelegate {
 }

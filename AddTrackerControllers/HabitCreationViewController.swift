@@ -1,6 +1,8 @@
 import UIKit
 
 final class HabitCreationViewController: UIViewController {
+    
+    var mode: Mode = .create
     private let trackerStore = TrackerStore(context: CoreDataManager.shared.context)
     private let categoryStore = TrackerCategoryStore(context: CoreDataManager.shared.context)
     private var schedule: [Weekday] = []
@@ -22,7 +24,7 @@ final class HabitCreationViewController: UIViewController {
     ]
     private var selectedEmojiIndex: Int?
     private var selectedColorIndex: Int?
-    private var selectedCategory: TrackerCategoryCoreData?
+    var selectedCategory: TrackerCategoryCoreData?
     var onTrackerCreated: ((Tracker, TrackerCategoryCoreData) -> Void)?
     private let cellIdentifier = AddTrackerCollectionViewCell().cellIdentifier
     private let collectionView = {
@@ -252,6 +254,39 @@ final class HabitCreationViewController: UIViewController {
         setupUI()
         setupCollectionView()
         keyboardConfigure()
+        if case .edit(let tracker) = mode {
+            setupForEditMode(with: tracker)
+        }
+    }
+    
+    private func setupForEditMode(with tracker: Tracker) {
+        titleLabel.text = "Редактирование привычки"
+        nameTextField.text = tracker.title
+        trackerTitle = tracker.title
+        
+        // Устанавливаем выбранные эмодзи и цвет
+        if let emojiIndex = emojies.firstIndex(of: tracker.emoji) {
+            selectedEmojiIndex = emojiIndex
+        }
+        
+        if let colorIndex = colors.firstIndex(where: { $0 == tracker.color }) {
+            selectedColorIndex = colorIndex
+        }
+        
+        // Устанавливаем расписание
+        if let schedule = tracker.schedule {
+            self.schedule = schedule
+            scheduleDetailsLabel.text = scheduleText(for: schedule)
+        }
+        
+        if let category = try? categoryStore.fetchCategory(for: tracker.id) {
+            selectedCategory = category
+            categoryDetailsLabel.text = category.title
+        }
+        
+        // Обновляем кнопку
+        createButton.setTitle("Сохранить", for: .normal)
+        updateCreateButtonState()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -264,7 +299,7 @@ final class HabitCreationViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.register(AddTrackerCollectionViewCell.self, forCellWithReuseIdentifier: cellIdentifier)
         collectionView.register(AddTrackerSectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: AddTrackerSectionHeaderView.identifier)
-        collectionView.allowsMultipleSelection = false 
+        collectionView.allowsMultipleSelection = false
     }
     
     private func keyboardConfigure() {
@@ -376,8 +411,16 @@ final class HabitCreationViewController: UIViewController {
             return
         }
         
+        // Исправление: используем существующий ID при редактировании
+        let trackerId: UUID
+        if case .edit(let existingTracker) = mode {
+            trackerId = existingTracker.id // Используем существующий ID
+        } else {
+            trackerId = UUID() // Создаем новый ID только для новых трекеров
+        }
+        
         let newTracker = Tracker(
-            id: UUID(),
+            id: trackerId, // Используем правильный ID
             title: trackerTitle,
             color: colors[selectedColorIndex],
             emoji: emojies[selectedEmojiIndex],
@@ -385,7 +428,11 @@ final class HabitCreationViewController: UIViewController {
         )
         
         do {
-            try trackerStore.addTracker(newTracker, category: selectedCategory)
+            if case .edit = mode {
+                try trackerStore.updateTracker(newTracker, in: selectedCategory)
+            } else {
+                try trackerStore.addTracker(newTracker, category: selectedCategory)
+            }
             onTrackerCreated?(newTracker, selectedCategory)
             dismiss(animated: true)
         } catch {
@@ -474,31 +521,31 @@ extension HabitCreationViewController: UITextFieldDelegate {
 extension HabitCreationViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch indexPath.section {
-               case 0: 
-                   if let previousIndex = selectedEmojiIndex {
-                       let previousIndexPath = IndexPath(row: previousIndex, section: 0)
-                       if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? AddTrackerCollectionViewCell {
-                           previousCell.setSelected(false)
-                       }
-                   }
-                   
-                   selectedEmojiIndex = indexPath.row
-                   if let newCell = collectionView.cellForItem(at: indexPath) as? AddTrackerCollectionViewCell {
-                       newCell.setSelected(true)
-                   }
-                   
-               case 1:
-                   if let previousIndex = selectedColorIndex {
-                       let previousIndexPath = IndexPath(row: previousIndex, section: 1)
-                       if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? AddTrackerCollectionViewCell {
-                           previousCell.setSelected(false)
-                       }
-                   }
-                   
-                   selectedColorIndex = indexPath.row
-                   if let newCell = collectionView.cellForItem(at: indexPath) as? AddTrackerCollectionViewCell {
-                       newCell.setSelected(true)
-                   }
+        case 0:
+            if let previousIndex = selectedEmojiIndex {
+                let previousIndexPath = IndexPath(row: previousIndex, section: 0)
+                if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? AddTrackerCollectionViewCell {
+                    previousCell.setSelected(false)
+                }
+            }
+            
+            selectedEmojiIndex = indexPath.row
+            if let newCell = collectionView.cellForItem(at: indexPath) as? AddTrackerCollectionViewCell {
+                newCell.setSelected(true)
+            }
+            
+        case 1:
+            if let previousIndex = selectedColorIndex {
+                let previousIndexPath = IndexPath(row: previousIndex, section: 1)
+                if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? AddTrackerCollectionViewCell {
+                    previousCell.setSelected(false)
+                }
+            }
+            
+            selectedColorIndex = indexPath.row
+            if let newCell = collectionView.cellForItem(at: indexPath) as? AddTrackerCollectionViewCell {
+                newCell.setSelected(true)
+            }
             
         default: break
         }
@@ -547,7 +594,7 @@ extension HabitCreationViewController: UICollectionViewDataSource {
         case 1:
             let isSelected = selectedColorIndex == indexPath.row
             cell.configure(with: colors[indexPath.row], isSelected: isSelected)
-        
+            
         default: break
         }
         
@@ -566,7 +613,7 @@ extension HabitCreationViewController: UICollectionViewDataSource {
             ofKind: kind,
             withReuseIdentifier: AddTrackerSectionHeaderView.identifier,
             for: indexPath)
-            as? AddTrackerSectionHeaderView else {
+                as? AddTrackerSectionHeaderView else {
             assertionFailure("Не удалось создать header типа TrackerSectionHeaderView")
             return UICollectionReusableView()
         }
@@ -575,7 +622,7 @@ extension HabitCreationViewController: UICollectionViewDataSource {
         case 1: header.titleLabel.text = "Цвет"
         default: break
         }
-            return header
+        return header
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
