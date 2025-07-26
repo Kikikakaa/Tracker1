@@ -138,6 +138,18 @@ final class TrackerViewController: UIViewController {
         reloadContent()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Отслеживаем открытие экрана
+        AnalyticsService.shared.trackScreenOpen(screen: .main)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        // Отслеживаем закрытие экрана
+        AnalyticsService.shared.trackScreenClose(screen: .main)
+    }
+    
     private func loadData() {
         do {
             // Очищаем локальные массивы перед загрузкой
@@ -222,7 +234,7 @@ final class TrackerViewController: UIViewController {
     }
     
     @objc private func didTapFilters() {
-        //AnalyticsEvent.log(event: .click, screen: .main, item: .filter)
+        AnalyticsService.shared.trackButtonClick(screen: .main, item: .filter)
         let filterVC = FilterViewController()
         filterVC.delegate = self
         filterVC.selectedFilter = currentFilter
@@ -290,7 +302,7 @@ final class TrackerViewController: UIViewController {
         if isTrackerCompletedToday(tracker) {
             return
         }
-        
+        AnalyticsService.shared.trackButtonClick(screen: .main, item: .track)
         do {
             try recordStore.addRecord(trackerId: tracker.id, date: currentDate)
             let record = TrackerRecord(id: UUID(), trackerId: tracker.id, date: currentDate)
@@ -352,6 +364,7 @@ final class TrackerViewController: UIViewController {
     }
     
     private func uncompleteTracker(_ tracker: Tracker) {
+        AnalyticsService.shared.trackButtonClick(screen: .main, item: .track)
         do {
             // Удаляем из Core Data
             try recordStore.deleteRecord(trackerId: tracker.id, date: currentDate)
@@ -500,10 +513,12 @@ extension TrackerViewController: UICollectionViewDataSource {
         }
         
         cell.onEditButtonTapped = { [weak self] in
+            AnalyticsService.shared.trackButtonClick(screen: .main, item: .edit)
             self?.editTracker(tracker)
         }
         
         cell.onDeleteButtonTapped = { [weak self] in
+            AnalyticsService.shared.trackButtonClick(screen: .main, item: .delete)
             self?.showDeleteConfirmation(for: tracker)
         }
         

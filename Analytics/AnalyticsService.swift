@@ -57,7 +57,36 @@ final class AnalyticsService {
         
         reportEvent(name: "date_changed", parameters: parameters)
     }
-    
+    // Отслеживание открытия экрана
+        func trackScreenOpen(screen: AnalyticsScreen) {
+            let parameters: [String: Any] = [
+                Parameters.event: Events.open,
+                Parameters.screen: screen.rawValue
+            ]
+            
+            reportEvent(name: Events.screenEvent, parameters: parameters)
+        }
+        
+        /// Отслеживание закрытия экрана
+        func trackScreenClose(screen: AnalyticsScreen) {
+            let parameters: [String: Any] = [
+                Parameters.event: Events.close,
+                Parameters.screen: screen.rawValue
+            ]
+            
+            reportEvent(name: Events.screenEvent, parameters: parameters)
+        }
+        
+        /// Отслеживание тапа на кнопку
+        func trackButtonClick(screen: AnalyticsScreen, item: AnalyticsItem) {
+            let parameters: [String: Any] = [
+                Parameters.event: Events.click,
+                Parameters.screen: screen.rawValue,
+                Parameters.item: item.rawValue
+            ]
+            
+            reportEvent(name: Events.screenEvent, parameters: parameters)
+        }
     // MARK: - Private Methods
     
     private func reportEvent(name: String, parameters: [String: Any]) {
@@ -82,6 +111,20 @@ final class AnalyticsService {
     }
 }
 
+// MARK: - Analytics Enums
+
+enum AnalyticsScreen: String {
+    case main = "Main"
+}
+
+enum AnalyticsItem: String {
+    case addTrack = "add_track"
+    case track = "track"
+    case filter = "filter"
+    case edit = "edit"
+    case delete = "delete"
+}
+
 // MARK: - Constants
 
 extension AnalyticsService {
@@ -90,6 +133,10 @@ extension AnalyticsService {
         static let trackerInteraction = "tracker_interaction"
         static let trackerSearch = "tracker_search"
         static let dateChanged = "date_changed"
+        static let screenEvent = "screen_event"
+        static let open = "open"
+        static let close = "close"
+        static let click = "click"
     }
     
     private enum Parameters {
@@ -107,5 +154,8 @@ extension AnalyticsService {
         static let isToday = "is_today"
         static let isWeekend = "is_weekend"
         static let timestamp = "timestamp"
+        static let event = "event"
+        static let screen = "screen"
+        static let item = "item"
     }
 }
